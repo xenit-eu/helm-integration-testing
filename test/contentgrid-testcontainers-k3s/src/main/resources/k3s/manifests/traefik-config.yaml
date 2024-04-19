@@ -1,0 +1,18 @@
+# Config for k3s-helm-controller-managed traefik
+#
+# See:
+# - https://docs.k3s.io/helm#customizing-packaged-components-with-helmchartconfig
+# - https://github.com/traefik/traefik-helm-chart/blob/master/traefik/values.yaml#L642
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    logs:
+      access:
+        enabled: true
+    ports:
+      web:
+        nodePort: 32080

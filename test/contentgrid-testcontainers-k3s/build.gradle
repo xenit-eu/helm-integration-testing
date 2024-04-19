@@ -1,0 +1,49 @@
+plugins {
+    id 'java-library'
+    id 'io.freefair.lombok' version '8.4'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation platform("org.springframework.boot:spring-boot-dependencies:3.2.5")
+
+//    implementation 'org.junit.jupiter:junit-jupiter-api'
+//    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
+//    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+//    implementation 'io.fabric8:kubernetes-model-core:6.9.2'
+//    implementation 'org.slf4j:slf4j-api'
+
+//    implementation 'org.springframework:spring-web'
+//    implementation 'org.springframework.hateoas:spring-hateoas'
+
+    api 'org.testcontainers:k3s'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+//        testImplementation 'io.fabric8:kubernetes-client:6.9.2'
+    testImplementation 'io.fabric8:kubernetes-junit-jupiter:6.9.2'
+    testImplementation 'org.assertj:assertj-core'
+
+    testImplementation 'org.testcontainers:testcontainers'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:k3s'
+
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+//    testRuntimeOnly 'org.slf4j:slf4j-simple:2.0.10'
+//    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+
+test {
+    useJUnitPlatform()
+}
