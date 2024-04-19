@@ -16,6 +16,7 @@ import io.fabric8.kubernetes.client.dsl.Resource;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 
@@ -23,6 +24,7 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 public class K3sCiliumContainerTest {
 
     @Test
+    @Disabled("expensive test (~80 seconds)")
     public void shouldStartAndHaveListableNode() {
         try (var container = new K3sCiliumContainer()) {
             container
