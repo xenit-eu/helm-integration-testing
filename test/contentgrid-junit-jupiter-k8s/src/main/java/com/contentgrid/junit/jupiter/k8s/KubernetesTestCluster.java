@@ -14,9 +14,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 /**
  * {@code @KubernetesTestCluster} is a JUnit Jupiter extension to facilitate integration testing with a Kubernetes test
  * cluster. This annotation implies {@code @KubernetesTest} from fabric8's kubernetes-client, which will inject a
- * {@link io.fabric8.kubernetes.client.KubernetesClient} in any field of that type. A kubernetes Namespace for the
- * tests and configures the client to use it. The Namespace
- *  * is deleted after the test suite execution.
+ * {@link io.fabric8.kubernetes.client.KubernetesClient} in any field of that type, with an ephemeral kubernetes
+ * namespace, which will be deleted again after the test suite execution.
  *
  * <p>
  * A configurable ordered list of {@link KubernetesClusterProvider}s is examined, to find one that can provision or
