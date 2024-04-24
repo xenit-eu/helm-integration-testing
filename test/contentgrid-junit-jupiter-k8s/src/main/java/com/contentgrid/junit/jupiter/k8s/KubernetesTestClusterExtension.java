@@ -38,6 +38,7 @@ public class KubernetesTestClusterExtension implements BeforeAllCallback, AfterA
         var kubeconfig = System.getProperty(SYSPROP_KUBECONFIG);
         if (!StringUtils.isBlank(kubeconfig)) {
             // store away existing 'kubeconfig' system property
+            log.warn("System property '{}' with value '{}' is ignored", SYSPROP_KUBECONFIG, kubeconfig);
             store.put("restore_kubeconfig", kubeconfig);
         }
 
@@ -107,6 +108,7 @@ public class KubernetesTestClusterExtension implements BeforeAllCallback, AfterA
         if (StringUtils.isBlank(restoreKubeconfig)) {
             System.clearProperty(SYSPROP_KUBECONFIG);
         } else {
+            log.warn("Restoring system property {}={}", SYSPROP_KUBECONFIG, restoreKubeconfig);
             System.setProperty(SYSPROP_KUBECONFIG, restoreKubeconfig);
         }
     }

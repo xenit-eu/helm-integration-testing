@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 
-import com.contentgrid.junit.jupiter.k8s.KubernetesTestClusterTest.DummyK8s.DummyK8sClusterProvider;
-import com.contentgrid.junit.jupiter.k8s.KubernetesTestClusterTest.Unavailable.UnavailableK8sClusterProvider;
+import com.contentgrid.junit.jupiter.k8s.KubernetesTestClusterExtensionTest.DummyK8s.DummyK8sClusterProvider;
+import com.contentgrid.junit.jupiter.k8s.KubernetesTestClusterExtensionTest.Unavailable.UnavailableK8sClusterProvider;
 import com.contentgrid.junit.jupiter.k8s.providers.K3sTestcontainersClusterProvider;
 import com.contentgrid.junit.jupiter.k8s.providers.KubernetesClusterProvider;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -21,7 +21,7 @@ import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.testcontainers.DockerClientFactory;
 
-class KubernetesTestClusterTest {
+class KubernetesTestClusterExtensionTest {
 
     @Test
     void testExtensionCondition() {
@@ -40,7 +40,7 @@ class KubernetesTestClusterTest {
     @Test
     void missingAnnotation() {
         assertThatThrownBy(() -> new KubernetesTestClusterExtension()
-                .evaluateExecutionCondition(extensionContext(KubernetesTestClusterTest.class)))
+                .evaluateExecutionCondition(extensionContext(KubernetesTestClusterExtensionTest.class)))
                 .isInstanceOf(ExtensionConfigurationException.class);
     }
 
