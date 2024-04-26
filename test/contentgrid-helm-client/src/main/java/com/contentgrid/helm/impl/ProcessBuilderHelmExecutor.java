@@ -47,24 +47,5 @@ class ProcessBuilderHelmExecutor implements CommandExecutor {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-//        try {
-//            var process = builder.start();
-//            //var result = new BufferedReader(new InputStreamReader(process.getInputStream())).lines();
-//
-//            int exitCode = process.waitFor();
-//
-//            if (exitCode != 0) {
-//                log.warn(new String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8));
-//                throw new RuntimeException("Failed with exit-code " + exitCode);
-//            }
-//
-//            return process.getInputStream();
-//        } catch (IOException e) {
-//            // problem with command invocation
-//            throw new UncheckedIOException(e);
-//        } catch (InterruptedException e) {
-//            // process was killed
-//            throw new RuntimeException(e);
-//        }
     }
 }
