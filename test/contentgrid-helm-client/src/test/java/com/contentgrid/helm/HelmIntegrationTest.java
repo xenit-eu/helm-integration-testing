@@ -13,13 +13,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 @KubernetesTestCluster
-class HelmClientIntegrationTest {
+class HelmIntegrationTest {
 
     static Namespace namespace;
 
     static KubernetesClient kubernetesClient;
 
-    static HelmClient helm;
+    static Helm helm;
 
     @BeforeAll
     static void setup() {
@@ -27,7 +27,7 @@ class HelmClientIntegrationTest {
         var kubeconfig = Path.of(System.getProperty("kubeconfig"));
         assertThat(kubeconfig).exists();
 
-        helm = HelmClient.builder()
+        helm = Helm.builder()
                 .withKubeConfig(kubeconfig)
                 .withNamespace(namespace.getMetadata().getName())
                 .build();

@@ -1,6 +1,6 @@
 package com.contentgrid.helm.impl;
 
-import com.contentgrid.helm.HelmClient;
+import com.contentgrid.helm.Helm;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,7 +13,7 @@ class HelmRepositoryCommandTest {
 
     @Test
     void emptyRepo(@TempDir Path helmTemp) throws Exception {
-        var helm = HelmClient.builder()
+        var helm = Helm.builder()
                 .withRepositoryConfig(Files.createFile(helmTemp.resolve("repo-config")))
                 .build();
 
@@ -23,7 +23,7 @@ class HelmRepositoryCommandTest {
     @Test
     void listRepo(@TempDir Path helmTemp) throws Exception {
         var repoConfigPath = Files.createFile(helmTemp.resolve("repo-config"));
-        var helm = HelmClient.builder()
+        var helm = Helm.builder()
                 .withRepositoryConfig(repoConfigPath)
                 .build();
 
@@ -42,7 +42,7 @@ class HelmRepositoryCommandTest {
 
     @Test
     void addRepo(@TempDir Path helmTemp) throws Exception {
-        var helm = HelmClient.builder()
+        var helm = Helm.builder()
                 .withRepositoryConfig(Files.createFile(helmTemp.resolve("repo-config")))
                 .build();
 

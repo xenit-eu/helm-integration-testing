@@ -7,7 +7,7 @@ Java wrapper around the [helm](https://helm.sh/) CLI tool
 Prerequisites: `helm` should be available in `$PATH`
 
 ```java
-var helm = HelmClient.builder()
+var helm = Helm.builder()
         .withKubeConfig(kubeconfig)
         .build();
 

@@ -1,6 +1,6 @@
 package com.contentgrid.helm.impl;
 
-import com.contentgrid.helm.HelmClient;
+import com.contentgrid.helm.Helm;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,7 +13,7 @@ class HelmDependencyCommandTest {
 
     @Test
     void listDependency(@TempDir Path workingDirectory) throws Exception {
-        var helm = HelmClient.builder()
+        var helm = Helm.builder()
                 .withWorkingDirectory(workingDirectory)
                 .build();
 

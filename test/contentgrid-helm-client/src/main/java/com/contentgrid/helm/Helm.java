@@ -1,9 +1,9 @@
 package com.contentgrid.helm;
 
-import com.contentgrid.helm.impl.DefaultHelmClientBuilder;
+import com.contentgrid.helm.impl.DefaultHelmBuilder;
 import java.util.Map;
 
-public interface HelmClient {
+public interface Helm {
 
     HelmListCommand list();
 
@@ -22,8 +22,8 @@ public interface HelmClient {
      */
     Map<String, String> environment();
 
-    static HelmClientBuilder builder() {
-        return new DefaultHelmClientBuilder();
+    static HelmBuilder builder() {
+        return new DefaultHelmBuilder();
     }
 
 }

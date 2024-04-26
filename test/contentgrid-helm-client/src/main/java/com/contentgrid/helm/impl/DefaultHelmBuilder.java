@@ -1,7 +1,7 @@
 package com.contentgrid.helm.impl;
 
-import com.contentgrid.helm.HelmClient;
-import com.contentgrid.helm.HelmClientBuilder;
+import com.contentgrid.helm.Helm;
+import com.contentgrid.helm.HelmBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,7 +14,7 @@ import lombok.With;
 
 @NoArgsConstructor
 @AllArgsConstructor
-public class DefaultHelmClientBuilder implements HelmClientBuilder {
+public class DefaultHelmBuilder implements HelmBuilder {
 
     @With
     private Path workingDirectory;
@@ -39,19 +39,19 @@ public class DefaultHelmClientBuilder implements HelmClientBuilder {
 
     @Override
     @SneakyThrows
-    public DefaultHelmClientBuilder withRepositoryConfigTempFile() {
+    public DefaultHelmBuilder withRepositoryConfigTempFile() {
         return this.withRepositoryConfig(Files.createTempFile("helm-", "-repositories.yaml"));
     }
 
     @Override
-    public HelmClient build() {
+    public Helm build() {
 
         var env = createEnv();
         var exec = new ProcessBuilderHelmExecutor(env, workingDirectory != null ? workingDirectory.toFile() : null);
 
         var objectMapper = new ObjectMapper().findAndRegisterModules();
 
-        return new DefaultHelmClient(exec, objectMapper);
+        return new DefaultHelm(exec, objectMapper);
     }
 
     private Map<String, String> createEnv() {

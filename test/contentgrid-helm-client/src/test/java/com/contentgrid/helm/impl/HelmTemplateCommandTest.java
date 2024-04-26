@@ -1,8 +1,7 @@
 package com.contentgrid.helm.impl;
 
-import com.contentgrid.helm.HelmClient;
+import com.contentgrid.helm.Helm;
 import com.contentgrid.helm.HelmTemplateCommand.TemplateFlag;
-import java.io.IOException;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -12,7 +11,7 @@ class HelmTemplateCommandTest {
     @Test
     void cilium() {
 
-        var helm = HelmClient.builder().build();
+        var helm = Helm.builder().build();
 
         var result = helm.template()
                 .chart("cilium", "cilium",

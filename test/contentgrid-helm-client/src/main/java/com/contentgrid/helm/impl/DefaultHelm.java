@@ -1,6 +1,6 @@
 package com.contentgrid.helm.impl;
 
-import com.contentgrid.helm.HelmClient;
+import com.contentgrid.helm.Helm;
 import com.contentgrid.helm.HelmDependencyCommand;
 import com.contentgrid.helm.HelmInstallCommand;
 import com.contentgrid.helm.HelmListCommand;
@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-class DefaultHelmClient implements HelmClient {
+class DefaultHelm implements Helm {
 
 
     @NonNull
