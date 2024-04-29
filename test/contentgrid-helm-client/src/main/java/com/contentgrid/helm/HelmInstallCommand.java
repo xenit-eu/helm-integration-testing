@@ -89,21 +89,12 @@ public interface HelmInstallCommand {
     }
 
     interface InstallOptionsHandler {
-
-
         void namespace(String namespace);
-
-
         void createNamespace();
-
         void generateName();
-
         void values(Path file);
-
         void values(Map<String, Object> values);
-
         void version(String version);
-
         void timeout(String duration);
     }
 

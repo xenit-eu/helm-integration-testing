@@ -44,7 +44,7 @@ public interface HelmTemplateCommand {
 
     @Value
     class TemplateResult {
-        final String output;
+        String output;
     }
 }
 
