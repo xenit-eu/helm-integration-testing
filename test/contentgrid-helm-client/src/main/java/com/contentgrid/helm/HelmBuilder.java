@@ -8,13 +8,13 @@ public interface HelmBuilder {
 
     HelmBuilder withRepositoryConfigTempFile();
 
-    HelmBuilder withWorkingDirectory(java.nio.file.Path workingDirectory);
+    HelmBuilder withWorkingDirectory(Path workingDirectory);
 
-    HelmBuilder withKubeConfig(java.nio.file.Path kubeConfig);
+    HelmBuilder withKubeConfig(Path kubeConfig);
 
     HelmBuilder withNamespace(String namespace);
 
     HelmBuilder withDataHome(Path dataHome);
 
-    HelmBuilder withRepositoryConfig(java.nio.file.Path repositoryConfig);
+    HelmBuilder withRepositoryConfig(Path repositoryConfig);
 }

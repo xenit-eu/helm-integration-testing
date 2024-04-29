@@ -42,9 +42,9 @@ class HelmIntegrationTest {
                                 "commonLabels", Map.of("foo", "bar")
                         )));
 
-        assertThat(result.getName()).isEqualTo("nginx");
-        assertThat(result.getVersion()).isEqualTo(1);
-        assertThat(result.getNamespace()).isEqualTo(namespace.getMetadata().getName());
+        assertThat(result.name()).isEqualTo("nginx");
+        assertThat(result.version()).isEqualTo(1);
+        assertThat(result.namespace()).isEqualTo(namespace.getMetadata().getName());
 
         var pods = kubernetesClient.pods().withLabel("foo", "bar").list().getItems();
         Assertions.assertThat(pods).hasSize(1);

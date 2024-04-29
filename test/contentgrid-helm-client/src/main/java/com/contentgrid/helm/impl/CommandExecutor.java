@@ -37,7 +37,7 @@ public interface CommandExecutor {
 
             return stdout;
         } catch (InterruptedException e) {
-            // process was killed
+            // java thread interrupted
             throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);

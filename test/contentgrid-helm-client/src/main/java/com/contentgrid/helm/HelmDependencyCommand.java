@@ -10,23 +10,15 @@ public interface HelmDependencyCommand {
 
     void build();
 
-    @Value
-    class DefaultHelmDependency implements HelmDependency {
-        String name;
-        String version;
-        URI repository;
-        String status;
-    }
-
     interface HelmDependency {
 
-        String getName();
+        String name();
 
-        String getVersion();
+        String version();
 
-        URI getRepository();
+        URI repository();
 
-        String getStatus();
+        String status();
     }
 }
 

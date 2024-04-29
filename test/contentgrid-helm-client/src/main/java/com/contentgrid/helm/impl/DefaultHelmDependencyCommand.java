@@ -1,11 +1,11 @@
 package com.contentgrid.helm.impl;
 
 import com.contentgrid.helm.HelmDependencyCommand;
+import com.contentgrid.helm.HelmDependencyCommand.HelmDependency;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -39,4 +39,9 @@ class DefaultHelmDependencyCommand implements HelmDependencyCommand {
     public void build() {
         this.executor.call(CMD_DEPENDENCY, "build");
     }
+
+}
+
+record DefaultHelmDependency(String name, String version, URI repository, String status) implements HelmDependency {
+
 }

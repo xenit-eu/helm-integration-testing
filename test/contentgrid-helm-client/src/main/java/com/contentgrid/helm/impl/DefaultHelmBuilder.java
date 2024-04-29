@@ -11,7 +11,9 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.With;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @NoArgsConstructor
 @AllArgsConstructor
 public class DefaultHelmBuilder implements HelmBuilder {
@@ -56,8 +58,11 @@ public class DefaultHelmBuilder implements HelmBuilder {
 
     private Map<String, String> createEnv() {
         var env = new HashMap<String, String>();
-        if (this.kubeConfig != null && Files.exists(this.kubeConfig)) {
+        if (this.kubeConfig != null) {
             env.put("KUBECONFIG", this.kubeConfig.toAbsolutePath().toString());
+            if (!Files.exists(this.kubeConfig)) {
+                log.warn("KUBECONFIG={} - but file not found", this.kubeConfig.toAbsolutePath());
+            }
         }
 
         if (this.namespace != null) {

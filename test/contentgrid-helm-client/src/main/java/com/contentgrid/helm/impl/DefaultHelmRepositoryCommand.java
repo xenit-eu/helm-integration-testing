@@ -1,6 +1,7 @@
 package com.contentgrid.helm.impl;
 
 import com.contentgrid.helm.HelmRepositoryCommand;
+import com.contentgrid.helm.HelmRepositoryCommand.HelmRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
@@ -8,7 +9,6 @@ import java.util.List;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.Value;
 
 @RequiredArgsConstructor
 class DefaultHelmRepositoryCommand implements HelmRepositoryCommand {
@@ -38,9 +38,8 @@ class DefaultHelmRepositoryCommand implements HelmRepositoryCommand {
     public void add(@NonNull String name, @NonNull URI repository) {
         this.executor.call(CMD_REPOSITORY, "add", name, repository.toString());
     }
+}
 
-    record DefaultHelmRepository(String name, String url) implements HelmRepository {
-
-    }
+record DefaultHelmRepository(String name, String url) implements HelmRepository {
 
 }

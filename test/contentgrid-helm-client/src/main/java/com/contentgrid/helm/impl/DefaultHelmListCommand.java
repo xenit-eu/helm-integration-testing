@@ -1,6 +1,7 @@
 package com.contentgrid.helm.impl;
 
 import com.contentgrid.helm.HelmListCommand;
+import com.contentgrid.helm.HelmListCommand.HelmRelease;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -11,7 +12,6 @@ import java.util.List;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -46,14 +46,14 @@ public class DefaultHelmListCommand implements HelmListCommand {
     }
 
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    record DefaultHelmRelease(@JsonProperty("app_version") String appVersion,
-                              String chart,
-                              String name,
-                              String namespace,
-                              String revision,
-                              String status,
-                              ZonedDateTime updated) implements HelmRelease {
+}
+@JsonIgnoreProperties(ignoreUnknown = true)
+record DefaultHelmRelease(@JsonProperty("app_version") String appVersion,
+                          String chart,
+                          String name,
+                          String namespace,
+                          String revision,
+                          String status,
+                          ZonedDateTime updated) implements HelmRelease {
 
-    }
 }

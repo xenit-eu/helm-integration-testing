@@ -36,9 +36,9 @@ class HelmDependencyCommandTest {
         var result = helm.dependency().list();
 
         Assertions.assertThat(result).singleElement().satisfies(dep -> {
-            Assertions.assertThat(dep.getName()).isEqualTo("keycloakx");
-            Assertions.assertThat(dep.getRepository()).isEqualTo(URI.create("https://codecentric.github.io/helm-charts"));
-            Assertions.assertThat(dep.getVersion()).isEqualTo("2.3.0");
+            Assertions.assertThat(dep.name()).isEqualTo("keycloakx");
+            Assertions.assertThat(dep.repository()).isEqualTo(URI.create("https://codecentric.github.io/helm-charts"));
+            Assertions.assertThat(dep.version()).isEqualTo("2.3.0");
         });
     }
 

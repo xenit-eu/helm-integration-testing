@@ -2,6 +2,8 @@ package com.contentgrid.helm.impl;
 
 import com.contentgrid.helm.HelmInstallCommand;
 import com.contentgrid.helm.HelmInstallCommand.InstallOptionsHandler;
+import com.contentgrid.helm.HelmInstallCommand.InstallResult;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -28,9 +30,6 @@ class DefaultHelmInstallCommand implements HelmInstallCommand {
         return this.install(name != null ? name : "", chart, List.of(options));
     }
 
-
-
-
     @SneakyThrows
     private InstallResult install(@NonNull String name, @NonNull String chart, @NonNull List<InstallOption> options) {
 
@@ -44,12 +43,6 @@ class DefaultHelmInstallCommand implements HelmInstallCommand {
         // chart reference is required
         args.add(chart);
 
-//        options.forEach(option -> {
-//            option.contribute(args);
-//        });
-
-//        installOptions.apply(args);
-
         var handler = new DefaultInstallOptionsHandler(args, this.objectMapper);
         for (InstallOption option : options) {
             option.apply(handler);
@@ -62,6 +55,13 @@ class DefaultHelmInstallCommand implements HelmInstallCommand {
 
         return this.objectMapper.readValue(stdout, DefaultInstallResult.class);
     }
+
+}
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+record DefaultInstallResult(String name, String namespace, long version, Map<String, String> info,
+                            Map<String, Object> chart) implements InstallResult {
+
 }
 
 @RequiredArgsConstructor

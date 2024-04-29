@@ -74,28 +74,17 @@ public interface HelmInstallCommand {
     }
 
 
-    @Value
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    class DefaultInstallResult implements InstallResult {
-
-        String name;
-        String namespace;
-        long version;
-        Map<String, String> info;
-        Map<String, Object> chart;
-    }
-
     interface InstallResult {
 
-        String getName();
+        String name();
 
-        String getNamespace();
+        String namespace();
 
-        long getVersion();
+        long version();
 
-        Map<String, String> getInfo();
+        Map<String, String> info();
 
-        Map<String, Object> getChart();
+        Map<String, Object> chart();
     }
 }
 
