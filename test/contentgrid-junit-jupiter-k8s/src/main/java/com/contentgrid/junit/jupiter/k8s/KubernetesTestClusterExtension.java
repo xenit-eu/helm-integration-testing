@@ -112,5 +112,4 @@ public class KubernetesTestClusterExtension implements BeforeAllCallback, AfterA
             System.setProperty(SYSPROP_KUBECONFIG, restoreKubeconfig);
         }
     }
-
 }

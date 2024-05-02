@@ -15,7 +15,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
  * JUnit Jupiter test instance fields, static fields, and method arguments.
  *
  * <p>The {@link Helm} client will be configured automatically using the kubeconfig found in the system property
- * {@code kubeconfig} or the environment variable {@code KUBECONFIG}.
+ * {@code kubeconfig} or the environment variable {@code KUBECONFIG}. The {@link Helm} client is installed in its
+ * separate ephemeral environment and does not share the helm repository collection with the {@code helm} CLI command.
  *
  * <p>If the fabric8 {@link io.fabric8.junit.jupiter.NamespaceExtension} is activated, the {@link Helm} client
  * will utilize the associated namespace as the default namespace.

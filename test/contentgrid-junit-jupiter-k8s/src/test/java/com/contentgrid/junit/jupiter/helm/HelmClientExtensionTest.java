@@ -41,11 +41,13 @@ class HelmClientExtensionTest {
 
         Helm helm;
 
-        // random namespace created by fabric8 junit-jupiter integration
+        // random ephemeral namespace created by fabric8 junit-jupiter integration
         Namespace namespace;
 
         @Test
         void testInstall() {
+            assertThat(helm.environment()).containsEntry("HELM_NAMESPACE", namespace.getMetadata().getName());
+
             assertThat(helm.list().releases()).isEmpty();
             var result = helm.install().chart("nginx", "oci://registry-1.docker.io/bitnamicharts/nginx");
 

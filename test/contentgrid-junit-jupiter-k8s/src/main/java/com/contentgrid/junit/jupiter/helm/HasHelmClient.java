@@ -65,7 +65,7 @@ public interface HasHelmClient {
         return Optional.empty();
     }
 
-    private static Path workingDirectory(ExtensionContext context) {
+    default Path workingDirectory(ExtensionContext context) {
         return getStore(context).getOrComputeIfAbsent("working-directory", key -> {
             try {
                 return Files.createTempDirectory("helm-");
