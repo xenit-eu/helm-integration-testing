@@ -44,14 +44,14 @@ public class HelmClientExtension implements HasHelmClient, BeforeAllCallback, Be
         return getHelmClient(extensionContext);
     }
 
-    static List<Field> findFields(ExtensionContext context, Class<?> fieldType, Predicate<Field> predicate) {
+    private static List<Field> findFields(ExtensionContext context, Class<?> fieldType, Predicate<Field> predicate) {
         return ReflectionSupport.findFields(
                 context.getRequiredTestClass(),
                 field -> predicate.test(field) && fieldType.equals(field.getType()),
                 HierarchyTraversalMode.TOP_DOWN);
     }
 
-    void setFieldValue(Field field, Object entity, Object value) throws IllegalAccessException {
+    private void setFieldValue(Field field, Object entity, Object value) throws IllegalAccessException {
         final boolean isAccessible = field.canAccess(entity);
         field.setAccessible(true);
         field.set(entity, value);
