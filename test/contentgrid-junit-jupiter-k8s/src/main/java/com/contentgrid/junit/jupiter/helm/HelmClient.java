@@ -11,17 +11,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
- * {@code @HelmClient} is a JUnit Jupiter that autowires a {@link Helm} client into junit-jupiter test instance
- * fields, static fields and method arguments.
+ * {@code @HelmClient} is a JUnit Jupiter extension that automatically injects a {@link Helm} client into
+ * JUnit Jupiter test instance fields, static fields, and method arguments.
  *
- * <p>The {@link Helm} client will be automatically configured with kubeconfig found in System Property
- * {@code kubeconfig} or enviroment variable {@code KUBECONFIG}.
+ * <p>The {@link Helm} client will be configured automatically using the kubeconfig found in the system property
+ * {@code kubeconfig} or the environment variable {@code KUBECONFIG}.
  *
- * <p>Additionally, if fabric8 {@link io.fabric8.junit.jupiter.NamespaceExtension} is activated, the {@link Helm} client
- * will use this namespace as the default namespace.
+ * <p>If the fabric8 {@link io.fabric8.junit.jupiter.NamespaceExtension} is activated, the {@link Helm} client
+ * will utilize the associated namespace as the default namespace.
  *
- * <p>This behaviour means that it works well together with {@link KubernetesTestCluster @KubernetesTestCluster}, if
- * you add that annotation before {@code @HelmClient}.
+ * <p>{@code @HelmClient} integrates seamlessly with {@link KubernetesTestCluster @KubernetesTestCluster}, if
+ * the {@code @KubernetesTestCluster} annotation is declared before {@code @HelmClient}.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
