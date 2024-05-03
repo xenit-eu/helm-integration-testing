@@ -9,7 +9,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 class DistributionRegistryContainerTest {
 
