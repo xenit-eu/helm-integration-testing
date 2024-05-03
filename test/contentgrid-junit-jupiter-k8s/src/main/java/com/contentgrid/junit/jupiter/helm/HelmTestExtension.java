@@ -70,9 +70,9 @@ public class HelmTestExtension implements HasHelmClient, BeforeAllCallback {
 
         if (chart.startsWith("classpath:")) {
             // classpath resource
-            chart = chart.substring("classpath:".length());
+            var classpathResourceName = chart.substring("classpath:".length());
             try {
-                var classpathUrl = testClass.getClassLoader().getResource(chart);
+                var classpathUrl = testClass.getClassLoader().getResource(classpathResourceName);
                 if (classpathUrl != null) {
                      var location = Path.of(classpathUrl.toURI());
                     if (Files.isDirectory(location) && Files.exists(location.resolve("Chart.yaml"))) {
