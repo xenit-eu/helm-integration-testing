@@ -1,0 +1,39 @@
+plugins {
+    id 'java-library'
+    id 'io.freefair.lombok' version '8.4'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation platform("org.springframework.boot:spring-boot-dependencies:3.2.5")
+
+    api 'org.testcontainers:testcontainers'
+
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.assertj:assertj-core'
+
+    testImplementation 'org.springframework:spring-webflux'
+    testImplementation 'org.springframework:spring-test'
+    testImplementation 'org.skyscreamer:jsonassert'
+
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:k3s'
+
+    testRuntimeOnly 'org.slf4j:slf4j-simple'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+}
