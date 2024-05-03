@@ -1,6 +1,5 @@
 package com.contentgrid.junit.jupiter.helm;
 
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -17,7 +16,19 @@ class HelmTestExtensionTest {
 
         @Nested
         @HelmTest(chart = "src/test/resources/fixtures/app")
-        class RelativePathToChart {
+        class ImplicitFilePathToChart {
+
+            @Test
+            void verifyChartCopied(Helm helm) {
+                assertThat(helm.dependency().list()).singleElement().satisfies(dep -> {
+                    assertThat(dep.name()).isEqualTo("keycloakx");
+                });
+            }
+        }
+
+        @Nested
+        @HelmTest(chart = "file:src/test/resources/fixtures/app")
+        class FilePathToChart {
 
             @Test
             void verifyChartCopied(Helm helm) {
@@ -45,7 +56,15 @@ class HelmTestExtensionTest {
         }
 
         @Test
-        void findRelativePathChart() {
+        void findFile_relativePathChart() {
+            var path = HelmTestExtension.findChartPath(this.getClass(), "file:src/test/resources/fixtures/app");
+            assertThat(path).isPresent().hasValueSatisfying(location -> {
+                assertThat(Files.isDirectory(location)).isTrue();
+            });
+        }
+
+        @Test
+        void findImplicitFile_relativePathChart() {
             var path = HelmTestExtension.findChartPath(this.getClass(), "src/test/resources/fixtures/app");
             assertThat(path).isPresent().hasValueSatisfying(location -> {
                 assertThat(Files.isDirectory(location)).isTrue();
@@ -53,7 +72,15 @@ class HelmTestExtensionTest {
         }
 
         @Test
-        void relativePathDirectlyToChartYaml() {
+        void findFile_relativePathToChartYaml() {
+            var path = HelmTestExtension.findChartPath(this.getClass(), "file:src/test/resources/fixtures/app/Chart.yaml");
+            assertThat(path).isPresent().hasValueSatisfying(location -> {
+                assertThat(Files.isDirectory(location)).isTrue();
+            });
+        }
+
+        @Test
+        void findImplicitFile_relativePathToChartYaml() {
             var path = HelmTestExtension.findChartPath(this.getClass(), "src/test/resources/fixtures/app/Chart.yaml");
             assertThat(path).isPresent().hasValueSatisfying(location -> {
                 assertThat(Files.isDirectory(location)).isTrue();

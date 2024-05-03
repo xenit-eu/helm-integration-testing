@@ -25,8 +25,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 public @interface HelmTest {
 
     /**
-     * Relative or absolute path to a local {@code Chart.yaml} or its containing directory on the host filesystem.
-     * Alternatively, also classpath resources can be referenced with the prefix {@code classpath:}
+     * Path to a local {@code Chart.yaml} or its containing directory. This path can be either a path to a file or
+     * directory on the host filesystem using a {@code file:} prefix, or a classpath resource using the
+     * {@code classpath:} prefix. Omitting a prefix will be interpreted as a host filesystem path.
+     *
      * @return the host path or classpath Chart location
      */
     String chart();
