@@ -30,14 +30,14 @@ class DefaultHelmDependencyCommand implements HelmDependencyCommand {
                 .toList();
     }
 
-    private static HelmDependency createHelmDependency(String name, String version, String repository, String status) {
-        return new DefaultHelmDependency(name, version, URI.create(repository), status);
-    }
-
     @Override
     @SneakyThrows
-    public void build() {
-        this.executor.call(CMD_DEPENDENCY, "build");
+    public void build(@NonNull String chart) {
+        this.executor.call(CMD_DEPENDENCY, "build", chart);
+    }
+
+    private static HelmDependency createHelmDependency(String name, String version, String repository, String status) {
+        return new DefaultHelmDependency(name, version, URI.create(repository), status);
     }
 
 }
