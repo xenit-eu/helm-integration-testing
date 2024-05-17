@@ -1,14 +1,24 @@
 package com.contentgrid.helm;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.nio.file.Path;
 import java.util.Map;
-import lombok.Value;
 
 public interface HelmInstallCommand {
 
 
     InstallResult chart(String name, String chart, InstallOption... options);
+
+    /**
+     * Install helm chart referenced by a local path to a packaged or unpacked chart.
+     *
+     * @param name of the helm release
+     * @param chartPath path to the chart
+     * @param options install flags
+     * @return
+     */
+    default InstallResult chart(String name, Path chartPath, InstallOption... options) {
+        return this.chart(name, chartPath.toAbsolutePath().normalize().toString(), options);
+    }
 
     /**
      * Install the referenced chart, with --generate-name implied
@@ -27,6 +37,20 @@ public interface HelmInstallCommand {
     }
 
     interface InstallOption {
+
+        /**
+         * Untyped arguments appended to the command. Main use case is adding less-common flags.
+         */
+        static InstallOption arguments(String... args) {
+            return handler -> handler.arguments(args);
+        }
+
+        /**
+         * Simulate an install, implying '--dry-run=client', no cluster connections will be attempted.
+         */
+        static InstallOption dryRun() {
+            return handler -> handler.dryRun();
+        }
 
         void apply(InstallOptionsHandler handler);
 
@@ -96,6 +120,8 @@ public interface HelmInstallCommand {
         void values(Map<String, Object> values);
         void version(String version);
         void timeout(String duration);
+        void dryRun();
+        void arguments(String ... args);
     }
 
 
