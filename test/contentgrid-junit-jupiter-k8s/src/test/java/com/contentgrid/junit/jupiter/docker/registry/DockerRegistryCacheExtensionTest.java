@@ -1,11 +1,11 @@
 package com.contentgrid.junit.jupiter.docker.registry;
 
-import static com.contentgrid.junit.jupiter.docker.registry.DockerRegistryCacheExtension.DOCKERMIRROR_NAMESPACE;
+import static com.contentgrid.junit.jupiter.docker.registry.DockerRegistryCacheExtension.CONTENTGRID_REGISTRY_CACHE_DISABLED;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
@@ -20,26 +20,41 @@ import org.testcontainers.DockerClientFactory;
 
 class DockerRegistryCacheExtensionTest {
 
+    static final String CONFIG_KEY = "contentgrid.registryCache.disabled";
     @Test
     void evaluateExecutionCondition_enabled() {
         var extension = new DockerRegistryCacheExtension();
+        var context =  Mockito.mock(ExtensionContext.class);
 
-        // enabled by default
-        assertThat(extension.evaluate(Map.of()).isDisabled()).isFalse();
-        assertThat(extension.evaluate(Map.of("CI", "true")).isDisabled()).isFalse();
+        Mockito.when(context.getConfigurationParameter(CONFIG_KEY)).thenReturn(Optional.empty());
+        assertThat(extension.isExtensionEnabled(context)).isTrue();
 
-        assertThat(extension.evaluate(Map.of("CONTENTGRID_REGISTRY_CACHE_DISABLED", "0")).isDisabled()).isFalse();
-        assertThat(extension.evaluate(Map.of("CONTENTGRID_REGISTRY_CACHE_DISABLED", "false")).isDisabled()).isFalse();
-        assertThat(extension.evaluate(Map.of("CONTENTGRID_REGISTRY_CACHE_DISABLED", "FaLsE")).isDisabled()).isFalse();
+        Mockito.when(context.getConfigurationParameter(CONFIG_KEY)).thenReturn(Optional.of("0"));
+        assertThat(extension.isExtensionEnabled(context)).isTrue();
+
+        Mockito.when(context.getConfigurationParameter(CONFIG_KEY)).thenReturn(Optional.of("false"));
+        assertThat(extension.isExtensionEnabled(context)).isTrue();
+
+        Mockito.when(context.getConfigurationParameter(CONFIG_KEY)).thenReturn(Optional.of("FaLsE"));
+        assertThat(extension.isExtensionEnabled(context)).isTrue();
     }
 
     @Test
     void evaluateExecutionCondition_disabled() {
         var extension = new DockerRegistryCacheExtension();
-        assertThat(extension.evaluate(Map.of("CONTENTGRID_REGISTRY_CACHE_DISABLED", "")).isDisabled()).isTrue();
-        assertThat(extension.evaluate(Map.of("CONTENTGRID_REGISTRY_CACHE_DISABLED", "true")).isDisabled()).isTrue();
-        assertThat(extension.evaluate(Map.of("CONTENTGRID_REGISTRY_CACHE_DISABLED", "1")).isDisabled()).isTrue();
-        assertThat(extension.evaluate(Map.of("CONTENTGRID_REGISTRY_CACHE_DISABLED", "foobar")).isDisabled()).isTrue();
+        var context =  Mockito.mock(ExtensionContext.class);
+
+        Mockito.when(context.getConfigurationParameter(CONFIG_KEY)).thenReturn(Optional.of(""));
+        assertThat(extension.isExtensionEnabled(context)).isFalse();
+
+        Mockito.when(context.getConfigurationParameter(CONFIG_KEY)).thenReturn(Optional.of("true"));
+        assertThat(extension.isExtensionEnabled(context)).isFalse();
+
+        Mockito.when(context.getConfigurationParameter(CONFIG_KEY)).thenReturn(Optional.of("1"));
+        assertThat(extension.isExtensionEnabled(context)).isFalse();
+
+        Mockito.when(context.getConfigurationParameter(CONFIG_KEY)).thenReturn(Optional.of("foobar"));
+        assertThat(extension.isExtensionEnabled(context)).isFalse();
     }
 
     @Test

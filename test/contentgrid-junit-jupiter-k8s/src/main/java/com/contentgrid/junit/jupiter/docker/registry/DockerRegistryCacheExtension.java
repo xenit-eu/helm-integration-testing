@@ -11,9 +11,9 @@ import java.util.Objects;
 import java.util.Set;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
-import org.junit.jupiter.api.extension.ExecutionCondition;
 import org.junit.jupiter.api.extension.ExtensionConfigurationException;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
@@ -23,10 +23,11 @@ import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.RegistryAuthLocator;
 
-public class DockerRegistryCacheExtension implements BeforeAllCallback, ExecutionCondition {
+@Slf4j
+public class DockerRegistryCacheExtension implements BeforeAllCallback {
 
     public static final Namespace DOCKERMIRROR_NAMESPACE = Namespace.create(DockerRegistryCacheExtension.class);
-    public static final String CONTENTGRID_REGISTRY_CACHE_DISABLED = "CONTENTGRID_REGISTRY_CACHE_DISABLED";
+    public static final String CONTENTGRID_REGISTRY_CACHE_DISABLED = "contentgrid.registryCache.disabled";
 
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
@@ -36,6 +37,11 @@ public class DockerRegistryCacheExtension implements BeforeAllCallback, Executio
         if (annotations.isEmpty()) {
             var message = "@%s not found".formatted(DockerRegistryCache.class.getSimpleName());
             throw new ExtensionConfigurationException(message);
+        }
+
+        if (!isExtensionEnabled(context)) {
+            log.info("Extension is disabled - with env %s".formatted(CONTENTGRID_REGISTRY_CACHE_DISABLED));
+            return;
         }
 
         var store = context.getStore(DOCKERMIRROR_NAMESPACE);
@@ -96,19 +102,16 @@ public class DockerRegistryCacheExtension implements BeforeAllCallback, Executio
         return new DockerRegistryCacheContainer(annotation.name(), container);
     }
 
-    @Override
-    public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
-        return evaluate(System.getenv());
-    }
-
-    ConditionEvaluationResult evaluate(@NonNull Map<String, String> env) {
-        var disabled = env.get(CONTENTGRID_REGISTRY_CACHE_DISABLED);
-        if (disabled != null && !"0".equalsIgnoreCase(disabled) && !"false".equalsIgnoreCase(disabled)) {
-            // disabled env var CONTENTGRID_REGISTRY_CACHE_DISABLED is set (and not to '0' or 'false')
-            return ConditionEvaluationResult.disabled("%s=%s".formatted(CONTENTGRID_REGISTRY_CACHE_DISABLED, disabled));
+    boolean isExtensionEnabled(ExtensionContext context) {
+        var disabled = context.getConfigurationParameter(CONTENTGRID_REGISTRY_CACHE_DISABLED);
+        if (disabled.isPresent()
+                && !disabled.get().equalsIgnoreCase("0")
+                && !disabled.get().equalsIgnoreCase("false")) {
+            // disabled via configuration parameter
+            return false;
         }
 
-        return ConditionEvaluationResult.enabled(null);
+        return true;
     }
 
 

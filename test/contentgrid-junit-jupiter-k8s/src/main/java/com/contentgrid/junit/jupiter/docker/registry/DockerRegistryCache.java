@@ -19,6 +19,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
  * - Environment variables: `DOCKER_AUTH_CONFIG`
  * - Docker config at location specified in `DOCKER_CONFIG` or at `{HOME}/.docker/config.json`
  *
+ * <p>This behaviour can be disabled with the system property {@code contentgrid.registryCache.disabled},
+ * as it might not be desired in continuous integration tests.
+ *
  * <pre>
  *
  *    Example:
