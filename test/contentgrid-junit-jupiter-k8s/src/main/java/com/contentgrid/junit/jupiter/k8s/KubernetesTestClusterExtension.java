@@ -1,11 +1,15 @@
 package com.contentgrid.junit.jupiter.k8s;
 
+import static com.contentgrid.junit.jupiter.docker.registry.DockerRegistryCacheExtension.DOCKERMIRROR_NAMESPACE;
+
+import com.contentgrid.junit.jupiter.docker.registry.DockerRegistryEndpoint;
 import com.contentgrid.junit.jupiter.k8s.providers.KubernetesClusterProvider;
 import com.contentgrid.junit.jupiter.k8s.providers.KubernetesClusterProvider.KubernetesProviderResult;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -47,6 +51,7 @@ public class KubernetesTestClusterExtension implements BeforeAllCallback, AfterA
                         .map(ReflectionSupport::newInstance)
                         .filter(candidate -> candidate.evaluate().isEnabled())
                         .findFirst()
+                        .map(provider -> configureRegistryMirrors(provider, context))
                         .map(KubernetesClusterProvider::start)
                         .orElseThrow(() -> new ExtensionConfigurationException(
                                 "No suitable %s found".formatted(KubernetesClusterProvider.class.getSimpleName()))),
@@ -59,6 +64,24 @@ public class KubernetesTestClusterExtension implements BeforeAllCallback, AfterA
 
         store.put("kubeconfig", kubeConfigPath.toString());
         System.setProperty(SYSPROP_KUBECONFIG, kubeConfigPath.toString());
+    }
+
+    KubernetesClusterProvider configureRegistryMirrors(KubernetesClusterProvider provider, ExtensionContext context) {
+        var store = context.getStore(DOCKERMIRROR_NAMESPACE);
+        var mirrors = store.get("mirrors", Set.class);
+
+        if (mirrors == null) {
+            return provider;
+        }
+
+        for(var mirror : mirrors) {
+            var name = mirror.toString();
+            var endpoint = store.get(name, DockerRegistryEndpoint.class);
+            log.info("configuring docker registry mirror for '{}' -> {}", endpoint.getName(), endpoint.getURI());
+            provider.addDockerRegistryMirror(endpoint.getName(), endpoint.getURI().toString());
+        }
+
+        return provider;
     }
 
     @Override

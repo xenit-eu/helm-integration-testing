@@ -17,6 +17,7 @@ dependencies {
     implementation platform("io.fabric8:kubernetes-client-bom:6.13.0")
 
     implementation project(':contentgrid-helm-client')
+    implementation project(':contentgrid-testcontainers-registry')
 
     implementation 'org.slf4j:slf4j-api'
     implementation 'org.junit.jupiter:junit-jupiter-api'
@@ -31,7 +32,6 @@ dependencies {
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.assertj:assertj-core'
     testImplementation 'org.mockito:mockito-core'
-    testImplementation 'org.skyscreamer:jsonassert'
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testRuntimeOnly 'org.slf4j:slf4j-simple'

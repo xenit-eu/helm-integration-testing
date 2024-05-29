@@ -48,6 +48,7 @@ class HelmTestExtensionTest {
                     assertThat(dep.name()).isEqualTo("keycloakx");
                 });
             }
+
         }
         @Test
         void findChartPathDefaultsToEmptyOptional() {
