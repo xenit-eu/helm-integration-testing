@@ -6,11 +6,14 @@ import com.github.dockerjava.api.model.Bind;
 import java.io.File;
 import java.net.URI;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import lombok.Getter;
 import lombok.NonNull;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.ConditionEvaluationResult;
+import org.junit.jupiter.api.extension.ExecutionCondition;
 import org.junit.jupiter.api.extension.ExtensionConfigurationException;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
@@ -20,9 +23,10 @@ import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.RegistryAuthLocator;
 
-public class DockerRegistryCacheExtension implements BeforeAllCallback {
+public class DockerRegistryCacheExtension implements BeforeAllCallback, ExecutionCondition {
 
     public static final Namespace DOCKERMIRROR_NAMESPACE = Namespace.create(DockerRegistryCacheExtension.class);
+    public static final String CONTENTGRID_REGISTRY_CACHE_DISABLED = "CONTENTGRID_REGISTRY_CACHE_DISABLED";
 
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
@@ -49,6 +53,17 @@ public class DockerRegistryCacheExtension implements BeforeAllCallback {
             var mirrors = (Set<String>) store.getOrComputeIfAbsent("mirrors", (key) -> new HashSet<>());
             mirrors.add(mirror.getKey());
         });
+    }
+
+    public static Set<String> getMirrors(@NonNull ExtensionContext context) {
+        var store = context.getStore(DOCKERMIRROR_NAMESPACE);
+        var mirrors = (Set<String>) store.getOrComputeIfAbsent("mirrors", (key) -> new HashSet<>());
+        return Set.copyOf(mirrors);
+    }
+
+    public static DockerRegistryEndpoint getMirror(@NonNull ExtensionContext context, String mirror) {
+        var store = context.getStore(DOCKERMIRROR_NAMESPACE);
+        return store.get(mirror, DockerRegistryEndpoint.class);
     }
 
     private DockerRegistryCacheContainer createContainer(@NonNull DockerRegistryCache annotation) {
@@ -79,6 +94,21 @@ public class DockerRegistryCacheExtension implements BeforeAllCallback {
         }
 
         return new DockerRegistryCacheContainer(annotation.name(), container);
+    }
+
+    @Override
+    public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
+        return evaluate(System.getenv());
+    }
+
+    ConditionEvaluationResult evaluate(@NonNull Map<String, String> env) {
+        var disabled = env.get(CONTENTGRID_REGISTRY_CACHE_DISABLED);
+        if (disabled != null && !"0".equalsIgnoreCase(disabled) && !"false".equalsIgnoreCase(disabled)) {
+            // disabled env var CONTENTGRID_REGISTRY_CACHE_DISABLED is set (and not to '0' or 'false')
+            return ConditionEvaluationResult.disabled("%s=%s".formatted(CONTENTGRID_REGISTRY_CACHE_DISABLED, disabled));
+        }
+
+        return ConditionEvaluationResult.enabled(null);
     }
 
 

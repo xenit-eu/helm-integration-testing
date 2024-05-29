@@ -4,11 +4,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 
+import com.contentgrid.junit.jupiter.docker.registry.DockerRegistryCache;
+import com.contentgrid.junit.jupiter.docker.registry.DockerRegistryCacheExtension;
+import com.contentgrid.junit.jupiter.k8s.KubernetesTestClusterExtensionTest.DockerRegistryDummyK8s.DockerRegistryCacheDummyK8sClusterProvider;
 import com.contentgrid.junit.jupiter.k8s.KubernetesTestClusterExtensionTest.DummyK8s.DummyK8sClusterProvider;
 import com.contentgrid.junit.jupiter.k8s.KubernetesTestClusterExtensionTest.Unavailable.UnavailableK8sClusterProvider;
 import com.contentgrid.junit.jupiter.k8s.providers.K3sTestcontainersClusterProvider;
 import com.contentgrid.junit.jupiter.k8s.providers.KubernetesClusterProvider;
+import com.contentgrid.junit.jupiter.k8s.providers.KubernetesClusterProvider.KubernetesProviderResult;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+import lombok.Getter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExtensionConfigurationException;
@@ -60,6 +68,27 @@ class KubernetesTestClusterExtensionTest {
         assertThat(System.getProperty(systemPropertyName)).isEqualTo(systemPropertyValue);
     }
 
+    @Test
+    void testDockerRegistryMirror() throws Exception {
+        var context = extensionContext(DockerRegistryDummyK8s.class);
+
+        var dockerRegistryCacheExtension = new DockerRegistryCacheExtension();
+        dockerRegistryCacheExtension.beforeAll(context);
+        var mirrors = DockerRegistryCacheExtension.getMirrors(context);
+        var dockerRegistryMirror = DockerRegistryCacheExtension.getMirror(context, mirrors.iterator().next());
+        assertThat(dockerRegistryMirror).isNotNull();
+
+        var extension = new KubernetesTestClusterExtension();
+        extension.beforeAll(context);
+
+
+        // verify docker-registry has been added to the k8s-cluster
+        var store = extension.getStore(context);
+        var result = store.get(KubernetesClusterProvider.class, KubernetesProviderResult.class);
+        // the .toString() method of the KubernetesProviderResult is overridden to return all the mirrors
+        assertThat(result.toString())
+                .isEqualTo("docker.io:%s".formatted(dockerRegistryMirror.getURI().toString()));
+    }
 
     @KubernetesTestCluster
     static class IntegrationTest {
@@ -120,6 +149,52 @@ class KubernetesTestClusterExtensionTest {
             @Override
             public void stop() {
 
+            }
+        }
+    }
+
+    @DockerRegistryCache(name = "docker.io", proxy = "https://registry-1.docker.io")
+    @KubernetesTestCluster(providers = DockerRegistryCacheDummyK8sClusterProvider.class)
+    static class DockerRegistryDummyK8s {
+        static class DockerRegistryCacheDummyK8sClusterProvider implements KubernetesClusterProvider {
+
+            private Map<String, String> dockerRegistryMirrors = new HashMap<>();
+
+            @Override
+            public ProviderEvaluationResult evaluate() {
+                return ProviderEvaluationResult.enabled();
+            }
+
+            @Override
+            public KubernetesProviderResult start() {
+                return new KubernetesProviderResult() {
+                    @Override
+                    public String getKubeConfigYaml() {
+                        return "";
+                    }
+
+                    @Override
+                    public void close() {
+
+                    }
+
+                    @Override
+                    public String toString() {
+                        return dockerRegistryMirrors.entrySet().stream()
+                                .map(entry -> entry.getKey() + ":" + entry.getValue())
+                                .collect(Collectors.joining(System.lineSeparator()));
+                    }
+                };
+            }
+
+            @Override
+            public void stop() {
+
+            }
+
+            @Override
+            public void addDockerRegistryMirror(String name, String endpoint) {
+                this.dockerRegistryMirrors.put(name, endpoint);
             }
         }
     }

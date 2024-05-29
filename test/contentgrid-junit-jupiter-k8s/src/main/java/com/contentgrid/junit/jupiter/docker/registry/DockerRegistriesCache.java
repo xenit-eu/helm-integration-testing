@@ -32,5 +32,6 @@ public @interface DockerRegistriesCache {
 
     /** (Required) One or more field or property mapping overrides. */
     DockerRegistryCache[] value();
+
 }
 

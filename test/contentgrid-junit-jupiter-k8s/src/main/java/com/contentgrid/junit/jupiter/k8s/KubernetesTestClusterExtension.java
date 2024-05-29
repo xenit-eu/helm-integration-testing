@@ -2,6 +2,7 @@ package com.contentgrid.junit.jupiter.k8s;
 
 import static com.contentgrid.junit.jupiter.docker.registry.DockerRegistryCacheExtension.DOCKERMIRROR_NAMESPACE;
 
+import com.contentgrid.junit.jupiter.docker.registry.DockerRegistryCacheExtension;
 import com.contentgrid.junit.jupiter.docker.registry.DockerRegistryEndpoint;
 import com.contentgrid.junit.jupiter.k8s.providers.KubernetesClusterProvider;
 import com.contentgrid.junit.jupiter.k8s.providers.KubernetesClusterProvider.KubernetesProviderResult;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.extension.ExecutionCondition;
 import org.junit.jupiter.api.extension.ExtensionConfigurationException;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
+import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.junit.platform.commons.support.AnnotationSupport;
 import org.junit.platform.commons.support.ReflectionSupport;
 import org.junit.platform.commons.util.StringUtils;
@@ -31,7 +33,7 @@ public class KubernetesTestClusterExtension implements BeforeAllCallback, AfterA
 
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
-        var store = context.getStore(NAMESPACE);
+        var store = getStore(context);
 
         var annotation = this.findAnnotation(context)
                 .orElseThrow(() -> {
@@ -66,17 +68,22 @@ public class KubernetesTestClusterExtension implements BeforeAllCallback, AfterA
         System.setProperty(SYSPROP_KUBECONFIG, kubeConfigPath.toString());
     }
 
-    KubernetesClusterProvider configureRegistryMirrors(KubernetesClusterProvider provider, ExtensionContext context) {
-        var store = context.getStore(DOCKERMIRROR_NAMESPACE);
-        var mirrors = store.get("mirrors", Set.class);
+    Store getStore(ExtensionContext context) {
+        return context.getStore(NAMESPACE);
+    }
 
+    KubernetesClusterProvider configureRegistryMirrors(KubernetesClusterProvider provider, ExtensionContext context) {
+        var mirrors = DockerRegistryCacheExtension.getMirrors(context);
         if (mirrors == null) {
             return provider;
         }
 
-        for(var mirror : mirrors) {
-            var name = mirror.toString();
-            var endpoint = store.get(name, DockerRegistryEndpoint.class);
+        for (var mirror : mirrors) {
+            var endpoint = DockerRegistryCacheExtension.getMirror(context, mirror);
+            if (endpoint == null) {
+                throw new ExtensionConfigurationException("Expected mirror '%s' but was null".formatted(mirror));
+            }
+
             log.info("configuring docker registry mirror for '{}' -> {}", endpoint.getName(), endpoint.getURI());
             provider.addDockerRegistryMirror(endpoint.getName(), endpoint.getURI().toString());
         }
@@ -125,7 +132,7 @@ public class KubernetesTestClusterExtension implements BeforeAllCallback, AfterA
 
     @Override
     public void afterAll(ExtensionContext context) {
-        var store = context.getStore(NAMESPACE);
+        Store store = getStore(context);
 
         var restoreKubeconfig = store.get("restore_kubeconfig", String.class);
         if (StringUtils.isBlank(restoreKubeconfig)) {
