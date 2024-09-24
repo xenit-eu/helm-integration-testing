@@ -45,8 +45,8 @@ public class K3sCiliumContainer extends K3sContainer {
             hostConfig.withBinds(Stream.concat(
                     Arrays.stream(hostConfig.getBinds()),
                     Stream.of(
-                        //     createSharedBind("/sys/fs/bpf", new Volume("/sys/fs/bpf")),
-                        //     createSharedBind("/sys/fs/cgroup", new Volume("/run/cilium/cgroupv2"))
+                            createSharedBind("/sys/fs/bpf", new Volume("/sys/fs/bpf")),
+                            createSharedBind("/sys/fs/cgroup", new Volume("/run/cilium/cgroupv2"))
                     )).toList());
         });
 
