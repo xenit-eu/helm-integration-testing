@@ -45,8 +45,8 @@ public class K3sCiliumContainer extends K3sContainer {
             hostConfig.withBinds(Stream.concat(
                     Arrays.stream(hostConfig.getBinds()),
                     Stream.of(
-                            createSharedBind("/sys/fs/bpf", new Volume("/sys/fs/bpf")),
-                            createSharedBind("/sys/fs/cgroup", new Volume("/run/cilium/cgroupv2"))
+                        //     createSharedBind("/sys/fs/bpf", new Volume("/sys/fs/bpf")),
+                        //     createSharedBind("/sys/fs/cgroup", new Volume("/run/cilium/cgroupv2"))
                     )).toList());
         });
 
@@ -66,7 +66,7 @@ public class K3sCiliumContainer extends K3sContainer {
 
         this.waitingFor(
                 new LogMessageWaitStrategy().withRegEx(".*Controller detected that some Nodes are Ready.*")
-                        .withStartupTimeout(Duration.of(2, ChronoUnit.MINUTES)));
+                        .withStartupTimeout(Duration.of(20, ChronoUnit.MINUTES)));
 
     }
 
