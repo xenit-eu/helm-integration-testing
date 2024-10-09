@@ -66,7 +66,7 @@ public class K3sCiliumContainer extends K3sContainer {
 
         this.waitingFor(
                 new LogMessageWaitStrategy().withRegEx(".*Controller detected that some Nodes are Ready.*")
-                        .withStartupTimeout(Duration.of(20, ChronoUnit.MINUTES)));
+                        .withStartupTimeout(Duration.of(2, ChronoUnit.MINUTES)));
 
     }
 
