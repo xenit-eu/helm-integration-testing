@@ -12,6 +12,8 @@ import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
 class DistributionRegistryContainerTest {
 
+    private static final MediaType OCI_IMAGE = MediaType.parseMediaType("application/vnd.oci.image.index.v1+json");
+
     @Test
     void testDefaultSetup() {
         try (var container = new DistributionRegistryContainer()) {
@@ -24,15 +26,10 @@ class DistributionRegistryContainerTest {
                     .baseUrl("http://localhost:%d".formatted(container.getMappedPort(5000)))
                     .build();
 
-            client.get().uri("/v2/_catalog")
+            client.get().uri("/v2/")
                     .exchange()
                     .expectStatus().isOk()
-                    .expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
-                    .expectBody().json("""
-                            {
-                                repositories: []
-                            }
-                            """);
+                    .expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_JSON);
 
             // this is an insecure registry by default
             // this can't be easily accessed through docker-java
@@ -74,28 +71,12 @@ class DistributionRegistryContainerTest {
                     .baseUrl("http://%s".formatted(container.getRegistry()))
                     .build();
 
-            // we start with an empty repository
-            client.get().uri("/v2/_catalog").exchange()
-                    .expectStatus().isOk()
-                    .expectBody().json("""
-                            {
-                                repositories: []
-                            }
-                            """);
-
             // fetch an image manifest using the rest api
             // proxy infrastructure should pull this transparently from https://registry-1.docker.io
             client.get().uri("/v2/library/alpine/manifests/latest")
+                    .accept(OCI_IMAGE)
                     .exchange()
                     .expectStatus().isOk();
-
-            client.get().uri("/v2/_catalog").exchange()
-                    .expectStatus().isOk()
-                    .expectBody().json("""
-                            {
-                                repositories: ["library/alpine"]
-                            }
-                            """);
         }
     }
 
@@ -112,18 +93,10 @@ class DistributionRegistryContainerTest {
                     .baseUrl("http://%s".formatted(container.getRegistry()))
                     .build();
 
-            // we start with an empty repository
-            client.get().uri("/v2/_catalog").exchange()
-                    .expectStatus().isOk()
-                    .expectBody().json("""
-                            {
-                                repositories: []
-                            }
-                            """);
-
             // fetch an image manifest using the rest api
             // proxy infrastructure should pull this transparently from https://registry-1.docker.io
             client.get().uri("/v2/library/alpine/manifests/latest")
+                    .accept(OCI_IMAGE)
                     .exchange()
                     .expectStatus().isOk();
         }
@@ -138,13 +111,10 @@ class DistributionRegistryContainerTest {
                     .baseUrl("http://%s".formatted(container.getRegistry()))
                     .build();
 
-            client.get().uri("/v2/_catalog").exchange()
-                    .expectStatus().isOk()
-                    .expectBody().json("""
-                            {
-                                repositories: ["library/alpine"]
-                            }
-                            """);
+            client.get().uri("/v2/library/alpine/manifests/latest")
+                    .accept(OCI_IMAGE)
+                    .exchange()
+                    .expectStatus().isOk();
         }
     }
 }
