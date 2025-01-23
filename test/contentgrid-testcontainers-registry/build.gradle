@@ -1,6 +1,6 @@
 plugins {
     id 'java-library'
-    id 'io.freefair.lombok' version '8.11'
+    id 'io.freefair.lombok' version '8.12'
 }
 
 java {
