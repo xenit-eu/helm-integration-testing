@@ -15,3 +15,5 @@ jobs:
           distribution: liberica
           java-version: 17
           cache: gradle
+      - name: Test
+        run: ./gradlew check --info
