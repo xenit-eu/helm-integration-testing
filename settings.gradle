@@ -1,1 +1,6 @@
 rootProject.name = 'helm-integration-testing'
+
+include 'contentgrid-helm-client'
+include 'contentgrid-testcontainers-k3s'
+include 'contentgrid-testcontainers-registry'
+include 'contentgrid-junit-jupiter-k8s'
