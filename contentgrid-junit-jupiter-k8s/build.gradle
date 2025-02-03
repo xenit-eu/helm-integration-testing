@@ -1,0 +1,44 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'io.freefair.lombok' version '8.12'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation platform("org.springframework.boot:spring-boot-dependencies:3.4.2")
+    implementation platform("io.fabric8:kubernetes-client-bom:7.1.0")
+
+    implementation project(':contentgrid-helm-client')
+    implementation project(':contentgrid-testcontainers-registry')
+
+    implementation 'org.slf4j:slf4j-api'
+    implementation 'org.junit.jupiter:junit-jupiter-api'
+    implementation 'io.fabric8:kubernetes-junit-jupiter'
+    implementation 'org.testcontainers:k3s'
+
+    testImplementation 'org.springframework:spring-webflux'
+    testImplementation 'org.springframework:spring-test'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.assertj:assertj-core'
+    testImplementation 'org.mockito:mockito-core'
+    testImplementation 'org.skyscreamer:jsonassert'
+
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'org.slf4j:slf4j-simple'
+}
+
+test {
+    useJUnitPlatform()
+}

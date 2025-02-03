@@ -1,0 +1,25 @@
+plugins {
+    id "eu.xenit.enterprise-conventions.oss" version "0.5.2"
+    id 'org.ajoberstar.reckon.settings' version '0.19.1'
+}
+
+rootProject.name = 'helm-integration-testing'
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+    }
+}
+
+reckon {
+    defaultInferredScope = 'patch'
+    snapshots()
+    scopeCalc = calcScopeFromCommitMessages()
+    stageCalc = { inventory, targetNormal -> java.util.Optional.empty() }
+}
+
+
+include 'contentgrid-helm-client'
+include 'contentgrid-testcontainers-k3s-cilium'
+include 'contentgrid-testcontainers-registry'
+include 'contentgrid-junit-jupiter-k8s'

@@ -1,0 +1,12 @@
+apiVersion: v2
+name: test
+
+type: application
+version: 1.2.3
+
+appVersion: "5.6.7"
+
+dependencies:
+  - name: keycloakx
+    repository: https://codecentric.github.io/helm-charts
+    version: "2.6.0"
