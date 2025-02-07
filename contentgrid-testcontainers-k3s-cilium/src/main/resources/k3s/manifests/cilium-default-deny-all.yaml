@@ -1,0 +1,48 @@
+---
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: default-deny-all
+spec:
+  description: "Deny all ingress/egress traffic by default"
+  endpointSelector: {}
+  egress:
+    - {}
+  ingress:
+    - {}
+---
+# Exception: for DNS egress from pods
+# Ideally this moves to the pod egress configuration
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: pod-to-kube-dns
+spec:
+  endpointSelector: {}
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: ANY
+          rules:
+            dns:
+              - matchPattern: "*"
+---
+# Exception: allow ingress from traefik for routing
+# Ideally this network policy gets removed and pods define their own ingress rules from ingress-endpoint
+# Problem: how to identify the ingress-endpoint: nginx vs traefik ?
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata:
+  name: traefik-ingress-from-all-pods
+spec:
+  description: "Allows all pods to be accessed by ingress"
+  endpointSelector: {}
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: traefik
