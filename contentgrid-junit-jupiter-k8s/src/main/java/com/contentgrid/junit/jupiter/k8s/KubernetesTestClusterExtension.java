@@ -1,16 +1,12 @@
 package com.contentgrid.junit.jupiter.k8s;
 
-import static com.contentgrid.junit.jupiter.docker.registry.DockerRegistryCacheExtension.DOCKERMIRROR_NAMESPACE;
-
 import com.contentgrid.junit.jupiter.docker.registry.DockerRegistryCacheExtension;
-import com.contentgrid.junit.jupiter.docker.registry.DockerRegistryEndpoint;
 import com.contentgrid.junit.jupiter.k8s.providers.KubernetesClusterProvider;
 import com.contentgrid.junit.jupiter.k8s.providers.KubernetesClusterProvider.KubernetesProviderResult;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
