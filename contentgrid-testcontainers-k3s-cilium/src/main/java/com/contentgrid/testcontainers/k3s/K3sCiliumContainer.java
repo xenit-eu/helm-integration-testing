@@ -19,10 +19,10 @@ import org.testcontainers.utility.MountableFile;
 public class K3sCiliumContainer extends K3sContainer {
 
     public K3sCiliumContainer() {
-        this(DockerImageName.parse("rancher/k3s:v1.29.3-k3s1"));
+        this(DockerImageName.parse("rancher/k3s:v1.29.3-k3s1"), false, false);
     }
 
-    public K3sCiliumContainer(DockerImageName k3sDockerImage) {
+    public K3sCiliumContainer(DockerImageName k3sDockerImage, boolean defaultDeny, boolean userSpaceCoreDNS) {
         super(k3sDockerImage);
 
         this.setCommand("server",
@@ -63,6 +63,22 @@ public class K3sCiliumContainer extends K3sContainer {
         this.withCopyToContainer(
                 MountableFile.forClasspathResource("k3s/manifests/cilium.yaml"),
                 "/var/lib/rancher/k3s/server/manifests/cilium.yaml");
+
+        if (userSpaceCoreDNS) {
+            // user-space coredns config
+            this.withCopyToContainer(
+                    MountableFile.forClasspathResource("k3s/manifests/coredns-config.yaml"),
+                    "/var/lib/rancher/k3s/server/manifests/coredns-config.yaml"
+            );
+        }
+
+        if (defaultDeny) {
+            // user-space default-deny-all network policy via k3s manifest
+            this.withCopyToContainer(
+                    MountableFile.forClasspathResource("k3s/manifests/cilium-default-deny-all.yaml"),
+                    "/var/lib/rancher/k3s/server/manifests/cilium-default-deny-all.yaml"
+            );
+        }
 
         this.waitingFor(
                 new LogMessageWaitStrategy().withRegEx(".*Controller detected that some Nodes are Ready.*")
