@@ -22,7 +22,11 @@ testImplementation 'com.contentgrid.helm:contentgrid-junit-jupiter-k8s:...'
 
 ### `@KubernetesTestCluster`
 
-Annotate a test class to use a Kubernetes cluster.
+Annotate a test class to use a Kubernetes cluster. The extension will automatically start a cluster (e.g., K3s) and configure the Kubernetes client.
+For debugging, if you want to interact with the Kubernetes cluster, you can find the kubeconfig in 'tmp':
+```bash
+ls -ltr /tmp/kubeconfig*.yml
+```
 
 ```java
 import com.contentgrid.junit.jupiter.k8s.KubernetesTestCluster;
