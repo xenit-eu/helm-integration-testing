@@ -20,6 +20,16 @@ import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
+/**
+ * JUnit 5 extension for setting up External Secrets Operator.
+ * <p>
+ * This extension installs the External Secrets Operator and sets up the necessary network policies.
+ * <p>
+ * It also provides autowiring for {@link ClusterSecretStore} and {@link SecretStore} fields.
+ * <p>
+ * To use this extension, annotate your test class with {@link FakeSecretStore} and inject {@link ClusterSecretStore}
+ * and {@link SecretStore} fields.
+ */
 @Slf4j
 public class ExternalSecretsExtension implements HasHelmClient, HasKubernetesClient, BeforeAllCallback,
         BeforeEachCallback, ParameterResolver {
