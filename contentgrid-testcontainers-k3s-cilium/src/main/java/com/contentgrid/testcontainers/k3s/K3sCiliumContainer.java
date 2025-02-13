@@ -32,8 +32,7 @@ public class K3sCiliumContainer extends K3sContainer {
                 // see https://docs.cilium.io/en/stable/installation/k8s-install-helm/
                 "--flannel-backend=none",
                 "--disable-network-policy",
-                "--disable=metrics-server",
-                "--disable=local-storage"
+                "--disable=metrics-server"
         );
 
         // Shared binds required by Cilium

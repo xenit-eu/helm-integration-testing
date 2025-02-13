@@ -90,3 +90,17 @@ spec:
     - toEntities:
         - kube-apiserver
 ---
+# local-path provisioner cilium-network-policy
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  namespace: kube-system
+  name: local-path-provisioner
+spec:
+  endpointSelector:
+    matchLabels:
+      app: local-path-provisioner
+  egress:
+    - toEntities:
+        - kube-apiserver
+---
