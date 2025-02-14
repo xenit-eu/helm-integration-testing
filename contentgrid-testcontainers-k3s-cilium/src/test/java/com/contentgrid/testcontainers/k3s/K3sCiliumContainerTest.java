@@ -24,7 +24,6 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 public class K3sCiliumContainerTest {
 
     @Test
-    @Disabled("expensive test (~80 seconds)")
     public void shouldStartAndHaveListableNode() {
         try (var container = new K3sCiliumContainer()) {
             container
