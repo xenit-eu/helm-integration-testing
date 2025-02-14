@@ -5,11 +5,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
 import io.fabric8.kubernetes.api.model.Node;
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
+import io.fabric8.kubernetes.api.model.PersistentVolumeClaimVolumeSourceBuilder;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
 import io.fabric8.kubernetes.api.model.PodSpec;
 import io.fabric8.kubernetes.api.model.PodSpecBuilder;
 import io.fabric8.kubernetes.api.model.ProbeBuilder;
+import io.fabric8.kubernetes.api.model.Quantity;
+import io.fabric8.kubernetes.api.model.VolumeBuilder;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.fabric8.kubernetes.client.dsl.Resource;
@@ -39,8 +44,20 @@ public class K3sCiliumContainerTest {
 
                 assertThat(nodes).hasSize(1);
 
+                // Making sure that creating a PVC and a Pod works
+                PersistentVolumeClaim persistentVolumeClaim = new PersistentVolumeClaimBuilder()
+                        .withNewMetadata().withName("test-pv-claim").withNamespace("default").endMetadata()
+                        .withNewSpec()
+                        .withAccessModes("ReadWriteOnce")
+                        .withNewResources()
+                        .addToRequests("storage", new Quantity("1Gi"))
+                        .endResources()
+                        .endSpec()
+                        .build();
+                client.persistentVolumeClaims().resource(persistentVolumeClaim).create();
+
                 // verify that we can start a pod
-                var helloworld = dummyStartablePod();
+                var helloworld = dummyStartablePod(persistentVolumeClaim.getMetadata().getName());
                 client.pods().resource(helloworld).create();
                 client.pods().inNamespace("default").withName("helloworld").waitUntilReady(30, TimeUnit.SECONDS);
 
@@ -51,7 +68,8 @@ public class K3sCiliumContainerTest {
         }
     }
 
-    private Pod dummyStartablePod() {
+    private Pod dummyStartablePod(String pvcName) {
+
         PodSpec podSpec = new PodSpecBuilder()
                 .withContainers(
                         new ContainerBuilder()
@@ -62,6 +80,13 @@ public class K3sCiliumContainerTest {
                                         new ProbeBuilder().withNewTcpSocket().withNewPort(8080).endTcpSocket().build())
                                 .build()
                 )
+                .withVolumes(List.of(
+                        new VolumeBuilder()
+                                .withName("test-volume")
+                                .withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSourceBuilder().withClaimName(
+                                        pvcName).build())
+                                .build()
+                ))
                 .build();
 
         return new PodBuilder()
