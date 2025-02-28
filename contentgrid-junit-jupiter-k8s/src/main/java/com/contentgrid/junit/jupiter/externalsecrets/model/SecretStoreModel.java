@@ -35,12 +35,10 @@ public class SecretStoreModel {
 
     /**
      * Set secrets
-     * @param secrets map of secrets
+     * @param secrets list of secrets
      */
-    public void setSecrets(Map<String, String> secrets) {
-        for (Map.Entry<String, String> entry : secrets.entrySet()) {
-            this.secrets.add(new SecretData(entry.getKey(), entry.getValue()));
-        }
+    public void setSecrets(List<SecretData> secrets) {
+        this.secrets.addAll(secrets);
     }
 
     /**
@@ -80,6 +78,7 @@ public class SecretStoreModel {
     public static class SecretData {
         private final String key;
         private final String value;
+        private final String version;
 
         /**
          * Constructor
@@ -87,8 +86,12 @@ public class SecretStoreModel {
          * @param value value
          */
         public SecretData(String key, String value) {
+            this(key, value, null);
+        }
+        public SecretData(String key, String value, String version) {
             this.key = key;
             this.value = value;
+            this.version = version;
         }
 
         /**
@@ -99,6 +102,9 @@ public class SecretStoreModel {
             Map<String, String> map = new HashMap<>();
             map.put("key", key);
             map.put("value", value);
+            if (version != null) {
+                map.put("version", version);
+            }
             return map;
         }
     }

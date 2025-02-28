@@ -4,9 +4,11 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.contentgrid.junit.jupiter.externalsecrets.model.SecretStoreModel.SecretData;
 import com.contentgrid.junit.jupiter.k8s.KubernetesTestCluster;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.junit.jupiter.api.BeforeAll;
@@ -102,6 +104,39 @@ public class ExternalSecretsExtensionTest {
             assertEquals("before-all-parameter-cluster-secret-store", ((ClusterSecretStore) clusterSecretStoreParameter).getName());
         }
 
+
+        @Test
+        void withVersions() {
+            staticClusterSecretStore.addSecrets(List.of(
+                    new SecretData("staticKey3", "staticValue3", "v1"),
+                    new SecretData("staticKey3", "static value 3", "v2")
+            ));
+
+            var template = """
+                    apiVersion: external-secrets.io/v1beta1
+                    kind: ExternalSecret
+                    metadata:
+                      name: versioned-secret
+                    spec:
+                      secretStoreRef:
+                        kind: ClusterSecretStore
+                        name: static-cluster-secret-store
+                      data:
+                        - secretKey: staticKey3
+                          remoteRef:
+                            key: staticKey3
+                            version: ${version}
+                    """;
+
+            client.resourceList(template.replace("${version}", "v1")).serverSideApply();
+
+            assertSecretValue("versioned-secret", "staticKey3", "staticValue3");
+
+            client.resourceList(template.replace("${version}", "v2")).serverSideApply();
+
+            assertSecretValue("versioned-secret", "staticKey3", "static value 3");
+
+        }
     }
 
 }
