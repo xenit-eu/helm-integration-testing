@@ -26,7 +26,6 @@ dependencies {
     implementation 'io.fabric8:kubernetes-junit-jupiter'
     implementation 'org.testcontainers:k3s'
     implementation 'org.awaitility:awaitility'
-    implementation 'com.google.guava:guava'
 
     testImplementation 'org.springframework:spring-webflux'
     testImplementation 'org.springframework:spring-test'
