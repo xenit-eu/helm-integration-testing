@@ -6,8 +6,6 @@ import static com.contentgrid.junit.jupiter.k8s.K8sTestUtils.waitUntilDeployment
 import static org.apache.commons.lang3.RandomStringUtils.insecure;
 
 import com.contentgrid.junit.jupiter.helm.HasHelmClient;
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Strings;
 import io.fabric8.junit.jupiter.HasKubernetesClient;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -104,19 +102,23 @@ public class ExternalSecretsExtension implements HasHelmClient, HasKubernetesCli
     private static String convertToValidName(String input) {
         // Convert camelCase to kebab-case
         String name = input.replaceAll("([a-z])([A-Z]+)", "$1-$2")
-                .toLowerCase(); // Convert to lowercase and replace camelCase with camel-case
-        name = CharMatcher.inRange('a', 'z').or(CharMatcher.inRange('0', '9')).or(CharMatcher.is('-'))
-                .or(CharMatcher.is('.')).retainFrom(name); // Keep only valid chars
-        name = name.replaceAll("[.-]{2,}", "-"); // Replace consecutive .- with -
-        name = CharMatcher.anyOf("-.").trimFrom(name);  // Trim leading/trailing .-
+                .toLowerCase();
 
-        name = Strings.emptyToNull(name);
-        if (name == null || !name.matches("^[a-z0-9].*[a-z0-9]$")) {
-            return insecure().nextAlphabetic(10).toLowerCase(); // Return a random name if invalid
+        // Keep only valid chars (a-z, 0-9, dash, dot)
+        name = name.replaceAll("[^a-z0-9.-]", "");
+
+        // Replace consecutive dots or dashes with a single dash
+        name = name.replaceAll("[.-]{2,}", "-");
+
+        // Trim leading/trailing dots and dashes
+        name = name.replaceAll("^[.-]+|[.-]+$", "");
+
+        // Handle empty or invalid names
+        if (name.isEmpty() || !name.matches("^[a-z0-9].*[a-z0-9]$")) {
+            return insecure().nextAlphabetic(10).toLowerCase();
         }
 
-        return name.substring(0, Math.min(253, name.length())); // Truncate if needed
+        // Truncate if needed
+        return name.substring(0, Math.min(253, name.length()));
     }
-
-
 }
