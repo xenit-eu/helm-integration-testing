@@ -115,7 +115,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import org.testcontainers.DockerClientFactory;
 
-@DockerRegistryCache(name = "docker.io", proxy = "[https://registry-1.docker.io](https://registry-1.docker.io)")
+@DockerRegistryCache(name = "docker.io", proxy = "https://registry-1.docker.io")
 class MyDockerRegistryTest {
 
     @Test
@@ -126,7 +126,7 @@ class MyDockerRegistryTest {
 }
 
 @KubernetesTestCluster
-@DockerRegistryCache(name = "docker.io", proxy = "[https://registry-1.docker.io](https://registry-1.docker.io)")
+@DockerRegistryCache(name = "docker.io", proxy = "https://registry-1.docker.io")
 class MyDockerRegistryKubernetesTest {
     @Test
     void testDockerRegistryMirrorWithKubernetes() {
