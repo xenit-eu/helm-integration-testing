@@ -102,7 +102,7 @@ public class ExternalSecretsExtension implements HasHelmClient, HasKubernetesCli
     }
 
     private static String convertToValidName(String input) {
-        // Convert camelCase to camel-case
+        // Convert camelCase to kebab-case
         String name = input.replaceAll("([a-z])([A-Z]+)", "$1-$2")
                 .toLowerCase(); // Convert to lowercase and replace camelCase with camel-case
         name = CharMatcher.inRange('a', 'z').or(CharMatcher.inRange('0', '9')).or(CharMatcher.is('-'))
