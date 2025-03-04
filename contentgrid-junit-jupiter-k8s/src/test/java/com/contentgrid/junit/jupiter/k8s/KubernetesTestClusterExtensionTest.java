@@ -16,7 +16,6 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
-import lombok.Getter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExtensionConfigurationException;
@@ -80,6 +79,30 @@ class KubernetesTestClusterExtensionTest {
 
         var extension = new KubernetesTestClusterExtension();
         extension.beforeAll(context);
+
+
+        // verify docker-registry has been added to the k8s-cluster
+        var store = extension.getStore(context);
+        var result = store.get(KubernetesClusterProvider.class, KubernetesProviderResult.class);
+        // the .toString() method of the KubernetesProviderResult is overridden to return all the mirrors
+        assertThat(result.toString())
+                .isEqualTo("docker.io:%s".formatted(dockerRegistryMirror.getURI().toString()));
+    }
+
+    @Test
+    void testDockerRegistryMirrorReverseAnnotationOrder() throws Exception {
+        var context = extensionContext(DockerRegistryDummyK8s.class);
+
+        // Put @KubernetesTestCluster first
+        var extension = new KubernetesTestClusterExtension();
+        extension.beforeAll(context);
+
+        // And @DockerRegistryCache second
+        var dockerRegistryCacheExtension = new DockerRegistryCacheExtension();
+        dockerRegistryCacheExtension.beforeAll(context);
+        var mirrors = DockerRegistryCacheExtension.getMirrors(context);
+        var dockerRegistryMirror = DockerRegistryCacheExtension.getMirror(context, mirrors.iterator().next());
+        assertThat(dockerRegistryMirror).isNotNull();
 
 
         // verify docker-registry has been added to the k8s-cluster
