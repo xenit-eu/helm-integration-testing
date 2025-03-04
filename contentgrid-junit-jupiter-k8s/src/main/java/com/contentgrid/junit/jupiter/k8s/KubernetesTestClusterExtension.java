@@ -1,6 +1,5 @@
 package com.contentgrid.junit.jupiter.k8s;
 
-import com.contentgrid.junit.jupiter.docker.registry.DockerRegistryCache;
 import com.contentgrid.junit.jupiter.docker.registry.DockerRegistryCacheExtension;
 import com.contentgrid.junit.jupiter.k8s.providers.KubernetesClusterProvider;
 import com.contentgrid.junit.jupiter.k8s.providers.KubernetesClusterProvider.KubernetesProviderResult;
