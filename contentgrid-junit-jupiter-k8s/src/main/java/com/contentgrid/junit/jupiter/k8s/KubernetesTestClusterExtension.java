@@ -45,8 +45,6 @@ public class KubernetesTestClusterExtension implements BeforeAllCallback, AfterA
             store.put("restore_kubeconfig", kubeconfig);
         }
 
-        ensureRegistryCacheFirst(context);
-
         var result = store.getOrComputeIfAbsent(KubernetesClusterProvider.class,
                 key -> Arrays.stream(annotation.providers())
                         .map(ReflectionSupport::newInstance)
@@ -69,19 +67,6 @@ public class KubernetesTestClusterExtension implements BeforeAllCallback, AfterA
 
     Store getStore(ExtensionContext context) {
         return context.getStore(NAMESPACE);
-    }
-
-    // Ensure the DockerRegistryCache extensions runs first, if the test class is annotated by both
-    void ensureRegistryCacheFirst(ExtensionContext context) throws Exception {
-        var annotations = AnnotationSupport.findRepeatableAnnotations(context.getRequiredTestClass(), DockerRegistryCache.class);
-        if (annotations.isEmpty()) {
-            return;
-        }
-        var mirrors = DockerRegistryCacheExtension.getMirrors(context);
-        if (mirrors == null || mirrors.size() == 0) {
-            // Annotation is present but there are no mirrors in the store → extension hasn't run yet, let's run it now
-            new DockerRegistryCacheExtension().beforeAll(context);
-        }
     }
 
     KubernetesClusterProvider configureRegistryMirrors(KubernetesClusterProvider provider, ExtensionContext context) {
