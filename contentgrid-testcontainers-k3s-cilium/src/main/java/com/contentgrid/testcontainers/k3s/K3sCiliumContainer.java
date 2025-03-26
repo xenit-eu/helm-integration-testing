@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 import org.testcontainers.containers.InternetProtocol;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.k3s.K3sContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
@@ -19,10 +20,10 @@ import org.testcontainers.utility.MountableFile;
 public class K3sCiliumContainer extends K3sContainer {
 
     public K3sCiliumContainer() {
-        this(DockerImageName.parse("rancher/k3s:v1.29.3-k3s1"), false, false);
+        this(DockerImageName.parse("rancher/k3s:v1.29.3-k3s1"), false);
     }
 
-    public K3sCiliumContainer(DockerImageName k3sDockerImage, boolean defaultDeny, boolean userSpaceCoreDNS) {
+    public K3sCiliumContainer(DockerImageName k3sDockerImage, boolean defaultDeny) {
         super(k3sDockerImage);
 
         this.setCommand("server",
@@ -63,14 +64,6 @@ public class K3sCiliumContainer extends K3sContainer {
                 MountableFile.forClasspathResource("k3s/manifests/cilium.yaml"),
                 "/var/lib/rancher/k3s/server/manifests/cilium.yaml");
 
-        if (userSpaceCoreDNS) {
-            // user-space coredns config
-            this.withCopyToContainer(
-                    MountableFile.forClasspathResource("k3s/manifests/coredns-config.yaml"),
-                    "/var/lib/rancher/k3s/server/manifests/coredns-config.yaml"
-            );
-        }
-
         if (defaultDeny) {
             // user-space default-deny-all network policy via k3s manifest
             this.withCopyToContainer(
@@ -89,4 +82,34 @@ public class K3sCiliumContainer extends K3sContainer {
         return new Bind(path, volume, AccessMode.rw, SELContext.DEFAULT, null, PropagationMode.SHARED);
     }
 
+    public K3sCiliumContainer withClusterDomains(String... domains) {
+        this.withCopyToContainer(
+                Transferable.of(templateCoreDNSConfig(domains)),
+                "/var/lib/rancher/k3s/server/manifests/coredns-config.yaml"
+        );
+        return this;
+    }
+
+    private String templateCoreDNSConfig(String... domains) {
+        var template =
+                """
+                apiVersion: v1
+                kind: ConfigMap
+                metadata:
+                  name: coredns-custom
+                  namespace: kube-system
+                data:
+                  contentgrid.test.server: |
+                    contentgrid.test:53 {
+                        errors
+                        hosts {
+                            172.17.0.1 %s
+                            fallthrough
+                        }
+                        forward . 127.0.0.1
+                    }
+                """;
+        var domainString = String.join(" ", domains);
+        return template.formatted(domainString);
+    }
 }
