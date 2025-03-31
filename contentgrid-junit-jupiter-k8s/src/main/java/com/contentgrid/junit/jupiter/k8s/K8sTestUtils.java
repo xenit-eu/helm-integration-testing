@@ -4,7 +4,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 
 import io.fabric8.kubernetes.api.model.apiextensions.v1.CustomResourceDefinition;
-import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import java.util.List;
@@ -14,7 +13,6 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.awaitility.core.ConditionEvaluationLogger;
 import org.hamcrest.Matchers;
-import org.jetbrains.annotations.NotNull;
 
 @Slf4j
 @UtilityClass
@@ -105,5 +103,10 @@ public class K8sTestUtils {
                         Matchers.empty()
                 );
     }
+
+    // TODO We might want to simplify these very-similar looking methods at some point, but I couldn't get past making
+    //   a generic <T extends HasMetadata> method where I run into issues on .filter(resource -> resource.getStatus())
+    //   because Fabric8 doesn't have an interface for "has status", and besides, the status on a StatefulSet is a
+    //   different type than on a Deployment.
 
 }
