@@ -83,4 +83,27 @@ public class K8sTestUtils {
                 );
     }
 
+    public static void waitUntilStatefulSetsReady(int timeout, List<String> statefulSets, KubernetesClient kubernetesClient) {
+        waitUntilStatefulSetsReady(timeout, statefulSets, kubernetesClient, null);
+    }
+
+    public static void waitUntilStatefulSetsReady(int timeout, List<String> statefulSets,
+            KubernetesClient kubernetesClient, String namespace) {
+        var client = namespace == null
+                ? kubernetesClient.apps().statefulSets()
+                : kubernetesClient.apps().statefulSets().inNamespace(namespace);
+        await()
+                .conditionEvaluationListener(new ConditionEvaluationLogger(log::info, SECONDS))
+                .pollInterval(1, SECONDS)
+                .atMost(timeout, SECONDS)
+                .until(() -> statefulSets.stream()
+                                .map(name -> client.withName(name).get())
+                                .filter(statefulSet -> statefulSet.getStatus().getReplicas() -
+                                        Objects.requireNonNullElse(statefulSet.getStatus().getReadyReplicas(), 0)
+                                        > 0)
+                                .collect(Collectors.toSet()),
+                        Matchers.empty()
+                );
+    }
+
 }
