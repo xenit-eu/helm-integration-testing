@@ -41,22 +41,29 @@ public class K8sTestUtils {
         }
     }
 
-
     public static void waitUntilDeploymentsReady(int timeout, List<String> deployments,
-            KubernetesClient kubernetesClient) {
+            KubernetesClient kubernetesClient, String namespace) {
+        var client = namespace == null
+                ? kubernetesClient.apps().deployments()
+                : kubernetesClient.apps().deployments().inNamespace(namespace);
         // wait until expected deployments have available-replica
         await()
                 .conditionEvaluationListener(new ConditionEvaluationLogger(log::info, SECONDS))
                 .pollInterval(1, SECONDS)
                 .atMost(timeout, SECONDS)
                 .until(() -> deployments.stream()
-                                .map(name -> kubernetesClient.apps().deployments().withName(name).get())
+                                .map(name -> client.withName(name).get())
                                 .filter(deployment -> deployment.getStatus().getReplicas() -
                                         Objects.requireNonNullElse(deployment.getStatus().getReadyReplicas(), 0)
                                         > 0)
                                 .collect(Collectors.toSet()),
                         Matchers.empty()
                 );
+    }
+
+    public static void waitUntilDeploymentsReady(int timeout, List<String> deployments,
+            KubernetesClient kubernetesClient) {
+        waitUntilDeploymentsReady(timeout, deployments, kubernetesClient, null);
     }
 
     public static void waitUntilReplicaSetsReady(int timeout, List<String> replicaSets,
