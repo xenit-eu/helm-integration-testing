@@ -66,13 +66,22 @@ public class K8sTestUtils {
 
     public static void waitUntilReplicaSetsReady(int timeout, List<String> replicaSets,
             KubernetesClient kubernetesClient) {
+        waitUntilReplicaSetsReady(timeout, replicaSets, kubernetesClient, null);
+    }
+
+    public static void waitUntilReplicaSetsReady(int timeout, List<String> replicaSets,
+            KubernetesClient kubernetesClient, String namespace) {
+        var client = namespace == null
+                ? kubernetesClient.apps().replicaSets()
+                : kubernetesClient.apps().replicaSets().inNamespace(namespace);
+
         // wait until expected replicaSets have available-replica
         await()
                 .conditionEvaluationListener(new ConditionEvaluationLogger(log::info, SECONDS))
                 .pollInterval(1, SECONDS)
                 .atMost(timeout, SECONDS)
                 .until(() -> replicaSets.stream()
-                                .map(name -> kubernetesClient.apps().replicaSets().withName(name).get())
+                                .map(name -> client.withName(name).get())
                                 .filter(replicaset -> replicaset.getStatus().getReplicas() -
                                         Objects.requireNonNullElse(replicaset.getStatus().getReadyReplicas(), 0)
                                         > 0)
