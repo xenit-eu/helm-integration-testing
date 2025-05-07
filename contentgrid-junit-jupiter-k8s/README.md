@@ -17,7 +17,7 @@ This project provides a set of JUnit Jupiter extensions to streamline testing wi
 Add the following dependencies to your project's `build.gradle` (or equivalent):
 
 ```groovy
-testImplementation 'com.contentgrid.helm:contentgrid-junit-jupiter-k8s:...'
+testImplementation 'com.contentgrid.helm.integrationtesting:contentgrid-junit-jupiter-k8s:...'
 ```
 
 ### `@KubernetesTestCluster`
