@@ -17,7 +17,7 @@ This project provides a set of JUnit Jupiter extensions to streamline testing wi
 Add the following dependencies to your project's `build.gradle` (or equivalent):
 
 ```groovy
-testImplementation 'com.contentgrid.helm:contentgrid-junit-jupiter-k8s:...'
+testImplementation 'com.contentgrid.helm.integrationtesting:contentgrid-junit-jupiter-k8s:...'
 ```
 
 ### `@KubernetesTestCluster`
@@ -84,7 +84,13 @@ class MyHelmKubernetesTest {
 
 ### `@HelmTest`
 
-Simplifies Helm chart testing.
+HelmTest is a JUnit Jupiter extension that facilitates testing helm charts.
+
+This annotation implies @HelmClient, which injects a configured Helm instance into
+JUnit Jupiter test instance fields, static fields, and method arguments.
+
+The referenced chart gets copied to the temporary working directory of the Helm client and chart repositories 
+are installed in the ephemeral repository list of the Helm client.
 
 ```java
 import com.contentgrid.helm.Helm;
