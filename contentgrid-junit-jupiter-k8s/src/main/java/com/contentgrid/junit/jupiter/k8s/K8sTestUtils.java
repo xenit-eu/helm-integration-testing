@@ -51,9 +51,14 @@ public class K8sTestUtils {
                 .atMost(timeout, SECONDS)
                 .until(() -> deployments.stream()
                                 .map(name -> client.withName(name).get())
-                                .filter(deployment -> deployment.getStatus().getReplicas() -
-                                        Objects.requireNonNullElse(deployment.getStatus().getReadyReplicas(), 0)
-                                        > 0)
+                                .filter(deployment -> {
+                                    if (deployment == null || deployment.getStatus() == null || deployment.getStatus().getReplicas() == null) {
+                                        return true;
+                                    }
+                                    return deployment.getStatus().getReplicas() -
+                                            Objects.requireNonNullElse(deployment.getStatus().getReadyReplicas(), 0)
+                                            > 0;
+                                })
                                 .collect(Collectors.toSet()),
                         Matchers.empty()
                 );
@@ -82,9 +87,14 @@ public class K8sTestUtils {
                 .atMost(timeout, SECONDS)
                 .until(() -> replicaSets.stream()
                                 .map(name -> client.withName(name).get())
-                                .filter(replicaset -> replicaset.getStatus().getReplicas() -
-                                        Objects.requireNonNullElse(replicaset.getStatus().getReadyReplicas(), 0)
-                                        > 0)
+                                .filter(replicaset -> {
+                                    if (replicaset == null || replicaset.getStatus() == null || replicaset.getStatus().getReplicas() == null) {
+                                        return true;
+                                    }
+                                    return replicaset.getStatus().getReplicas() -
+                                            Objects.requireNonNullElse(replicaset.getStatus().getReadyReplicas(), 0)
+                                            > 0;
+                                })
                                 .collect(Collectors.toSet()),
                         Matchers.empty()
                 );
@@ -105,9 +115,14 @@ public class K8sTestUtils {
                 .atMost(timeout, SECONDS)
                 .until(() -> statefulSets.stream()
                                 .map(name -> client.withName(name).get())
-                                .filter(statefulSet -> statefulSet.getStatus().getReplicas() -
-                                        Objects.requireNonNullElse(statefulSet.getStatus().getReadyReplicas(), 0)
-                                        > 0)
+                                .filter(statefulSet -> {
+                                    if (statefulSet == null || statefulSet.getStatus() == null || statefulSet.getStatus().getReplicas() == null) {
+                                        return true;
+                                    }
+                                    return statefulSet.getStatus().getReplicas() -
+                                            Objects.requireNonNullElse(statefulSet.getStatus().getReadyReplicas(), 0)
+                                            > 0;
+                                })
                                 .collect(Collectors.toSet()),
                         Matchers.empty()
                 );
