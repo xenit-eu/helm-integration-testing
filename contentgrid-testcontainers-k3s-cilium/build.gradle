@@ -22,7 +22,7 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.assertj:assertj-core'
-    testImplementation 'io.fabric8:kubernetes-junit-jupiter:7.2.0'
+    testImplementation 'io.fabric8:kubernetes-junit-jupiter:7.3.0'
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:k3s'
 

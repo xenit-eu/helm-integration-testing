@@ -15,7 +15,7 @@ repositories {
 
 dependencies {
     implementation platform("org.springframework.boot:spring-boot-dependencies:3.4.5")
-    implementation platform("io.fabric8:kubernetes-client-bom:7.2.0")
+    implementation platform("io.fabric8:kubernetes-client-bom:7.3.0")
 
     implementation project(':contentgrid-helm-client')
     implementation project(':contentgrid-testcontainers-registry')
