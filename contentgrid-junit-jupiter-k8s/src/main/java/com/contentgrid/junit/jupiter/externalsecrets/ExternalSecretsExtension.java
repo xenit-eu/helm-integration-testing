@@ -46,8 +46,9 @@ public class ExternalSecretsExtension implements HasHelmClient, HasKubernetesCli
         var helm = getHelmClient(context);
         // setup external-secrets-operator
         helm.repository().add("external-secrets", "https://charts.external-secrets.io");
-        helm.dependency().build(ExternalSecretsExtension.class.getResource("/externalsecrets/chart").getPath());
-        helm.install().chart("external-secrets", ExternalSecretsExtension.class.getResource("/externalsecrets/chart").getPath());
+        var chartPath = ExternalSecretsExtension.class.getResource("/externalsecrets/chart").getPath();
+        helm.dependency().build(chartPath);
+        helm.install().chart("external-secrets", chartPath);
 
         // wait until expected deployments have available-replica
         waitUntilDeploymentsReady(2 * 60,
