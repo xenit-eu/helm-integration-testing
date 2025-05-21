@@ -5,7 +5,6 @@ import static com.contentgrid.junit.jupiter.k8s.K8sTestUtils.isCiliumNetworkPoli
 import static com.contentgrid.junit.jupiter.k8s.K8sTestUtils.waitUntilDeploymentsReady;
 import static org.apache.commons.lang3.RandomStringUtils.insecure;
 
-import com.contentgrid.helm.HelmInstallCommand.InstallOption;
 import com.contentgrid.junit.jupiter.helm.HasHelmClient;
 import io.fabric8.junit.jupiter.HasKubernetesClient;
 import java.lang.reflect.Field;
@@ -47,7 +46,9 @@ public class ExternalSecretsExtension implements HasHelmClient, HasKubernetesCli
         var helm = getHelmClient(context);
         // setup external-secrets-operator
         helm.repository().add("external-secrets", "https://charts.external-secrets.io");
-        helm.install().chart("external-secrets", "external-secrets/external-secrets", InstallOption.version("v0.16.2"));
+        var chartPath = ExternalSecretsExtension.class.getResource("/externalsecrets/chart").getPath();
+        helm.dependency().build(chartPath);
+        helm.install().chart("external-secrets", chartPath);
 
         // wait until expected deployments have available-replica
         waitUntilDeploymentsReady(2 * 60,
