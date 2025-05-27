@@ -14,9 +14,7 @@ import java.util.Map.Entry;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @RequiredArgsConstructor
 class DefaultHelmInstallCommand implements HelmInstallCommand {
 
@@ -55,8 +53,6 @@ class DefaultHelmInstallCommand implements HelmInstallCommand {
         args.addAll(List.of("--output", "json"));
 
         var stdout = this.executor.call(CMD_INSTALL, args);
-
-        log.info(stdout);
 
         return this.objectMapper.readValue(stdout, DefaultInstallResult.class);
     }

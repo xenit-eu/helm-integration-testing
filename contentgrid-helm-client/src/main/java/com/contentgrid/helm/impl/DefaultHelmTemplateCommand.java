@@ -9,9 +9,7 @@ import java.util.List;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @RequiredArgsConstructor
 class DefaultHelmTemplateCommand implements HelmTemplateCommand {
 
@@ -47,8 +45,6 @@ class DefaultHelmTemplateCommand implements HelmTemplateCommand {
         });
 
         var stdout = this.executor.call(CMD_TEMPLATE, args);
-
-        log.debug(System.lineSeparator() + stdout);
 
         return new TemplateResult(stdout);
     }
