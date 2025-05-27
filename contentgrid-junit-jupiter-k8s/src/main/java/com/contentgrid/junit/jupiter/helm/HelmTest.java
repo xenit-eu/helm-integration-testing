@@ -16,12 +16,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
  *
  * The referenced chart gets copied to the temporary working directory of the {@link Helm} client and chart repositories
  * are installed in the ephemeral repository list of the {@link Helm} client.
+ *
+ * @deprecated Use the {@link HelmChart @HelmChart} annotation on a {@link HelmChartHandle} field instead
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@ExtendWith(HelmClientExtension.class)
-@ExtendWith(HelmTestExtension.class)
+@ExtendWith({HelmClientExtension.class, HelmChartHandleExtension.class, HelmTestExtension.class})
 @Inherited
+@Deprecated(since = "0.0.8", forRemoval = true)
 public @interface HelmTest {
 
     /**

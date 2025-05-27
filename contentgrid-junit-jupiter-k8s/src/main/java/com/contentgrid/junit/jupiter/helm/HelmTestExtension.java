@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.platform.commons.support.AnnotationSupport;
 
 @Slf4j
+@Deprecated(since = "0.0.8", forRemoval = true)
 public class HelmTestExtension implements HasHelmClient, BeforeAllCallback {
 
     @Override

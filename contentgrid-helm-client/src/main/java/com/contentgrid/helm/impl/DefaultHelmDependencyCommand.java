@@ -20,8 +20,8 @@ class DefaultHelmDependencyCommand implements HelmDependencyCommand {
 
     @Override
     @SneakyThrows
-    public List<HelmDependency> list() {
-        return Arrays.stream(this.executor.call(CMD_DEPENDENCY, "list").split(System.lineSeparator()))
+    public List<HelmDependency> list(String chart) {
+        return Arrays.stream(this.executor.call(CMD_DEPENDENCY, "list", chart).split(System.lineSeparator()))
                 .skip(1) // skip header
                 .filter(Objects::nonNull)
                 .map(line -> line.split("\\s+"))

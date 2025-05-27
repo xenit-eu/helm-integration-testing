@@ -13,6 +13,8 @@ public interface Helm {
 
     HelmInstallCommand install();
 
+    HelmUninstallCommand uninstall();
+
     HelmTemplateCommand template();
 
     /**
