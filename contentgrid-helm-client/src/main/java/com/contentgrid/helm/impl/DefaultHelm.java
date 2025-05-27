@@ -6,6 +6,7 @@ import com.contentgrid.helm.HelmInstallCommand;
 import com.contentgrid.helm.HelmListCommand;
 import com.contentgrid.helm.HelmRepositoryCommand;
 import com.contentgrid.helm.HelmTemplateCommand;
+import com.contentgrid.helm.HelmUninstallCommand;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 import lombok.NonNull;
@@ -42,6 +43,11 @@ class DefaultHelm implements Helm {
     @Override
     public HelmInstallCommand install() {
         return new DefaultHelmInstallCommand(this.executor, this.objectMapper);
+    }
+
+    @Override
+    public HelmUninstallCommand uninstall() {
+        return new DefaultHelmUninstallCommand(this.executor);
     }
 
     @Override

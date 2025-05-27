@@ -1,15 +1,20 @@
 package com.contentgrid.helm;
 
-import com.contentgrid.helm.HelmInstallCommand.InstallOption;
-import com.contentgrid.helm.HelmInstallCommand.InstallResult;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
-import lombok.Value;
 
 public interface HelmDependencyCommand {
 
-    List<HelmDependency> list();
+    List<HelmDependency> list(String chart);
+
+    default List<HelmDependency> list(Path chartPath) {
+        return list(chartPath.toAbsolutePath().normalize().toString());
+    }
+
+    default List<HelmDependency> list() {
+        return list(".");
+    }
 
     void build(String chart);
 

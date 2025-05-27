@@ -18,4 +18,20 @@ public class FieldHelper {
                 HierarchyTraversalMode.TOP_DOWN);
     }
 
+    public static Object getFieldValue(Field field, Object entity) throws IllegalAccessException {
+        var isAccessible = field.isAccessible();
+        try {
+            field.setAccessible(true);
+            return field.get(entity);
+        } finally {
+            field.setAccessible(isAccessible);
+        }
+    }
+
+    public static void setFieldValue(Field field, Object entity, Object value) throws IllegalAccessException {
+        final boolean isAccessible = field.isAccessible();
+        field.setAccessible(true);
+        field.set(entity, value);
+        field.setAccessible(isAccessible);
+    }
 }

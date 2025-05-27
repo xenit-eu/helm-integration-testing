@@ -55,5 +55,9 @@ class HelmIntegrationTest {
             assertThat(release.namespace()).isEqualTo(namespace.getMetadata().getName());
             assertThat(release.status()).isEqualTo("deployed");
         });
+
+        var uninstallResult = helm.uninstall().uninstall("nginx");
+
+        assertThat(helm.list().releases()).isEmpty();
     }
 }

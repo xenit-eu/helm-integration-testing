@@ -1,11 +1,19 @@
 package com.contentgrid.helm;
 
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Map;
 
 public interface HelmInstallCommand {
 
 
+    /**
+     * Install helm chart referenced by a local path to a packaged or unpacked chart.
+     *
+     * @param name of the helm release
+     * @param chart a chart reference, a path to a packaged chart, a path to an unpacked chart directory or a URL
+     * @param options install flags
+     */
     InstallResult chart(String name, String chart, InstallOption... options);
 
     /**
@@ -14,7 +22,6 @@ public interface HelmInstallCommand {
      * @param name of the helm release
      * @param chartPath path to the chart
      * @param options install flags
-     * @return
      */
     default InstallResult chart(String name, Path chartPath, InstallOption... options) {
         return this.chart(name, chartPath.toAbsolutePath().normalize().toString(), options);
@@ -23,15 +30,21 @@ public interface HelmInstallCommand {
     /**
      * Install the referenced chart, with --generate-name implied
      *
-     * @param chart - a chart reference, a path to a packaged chart, a path to an unpacked chart directory or a URL
+     * @param chart a chart reference, a path to a packaged chart, a path to an unpacked chart directory or a URL
+     * @param options additional installation options
      */
-    default InstallResult chart(String chart) {
-        return this.chart(null, chart, InstallOption.generateName());
+    default InstallResult chart(String chart, InstallOption... options) {
+        var installOptions = Arrays.copyOf(options, options.length+1);
+        installOptions[options.length] = InstallOption.generateName();
+        return this.chart(null, chart, installOptions);
     }
 
     /**
      * Install the chart from the current working directory, with --generate-name implied
+     *
+     * @deprecated This confusingly-named function can be replaced by {@code .chart(".")}
      */
+    @Deprecated(since = "0.0.8", forRemoval = true)
     default InstallResult cwd() {
         return this.chart(".");
     }
