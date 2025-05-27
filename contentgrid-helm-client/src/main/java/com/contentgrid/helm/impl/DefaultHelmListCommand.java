@@ -12,9 +12,7 @@ import java.util.List;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @RequiredArgsConstructor
 public class DefaultHelmListCommand implements HelmListCommand {
 
@@ -39,7 +37,6 @@ public class DefaultHelmListCommand implements HelmListCommand {
         args.addAll(List.of("--time-format", RFC3339));
 
         var stdout = String.join(System.lineSeparator(), this.executor.call(CMD_LIST, args));
-        log.info("{}{}", System.lineSeparator(), stdout);
 
         return objectMapper.readValue(stdout, RELEASES_TYPEREF)
                 .stream().map(HelmRelease.class::cast).toList();

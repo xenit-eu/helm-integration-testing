@@ -35,7 +35,7 @@ class ProcessBuilderHelmExecutor implements CommandExecutor {
         builder.environment().putAll(this.environment);
         builder.directory(this.workingDirectory);
 
-        log.info("$ {} {}",
+        log.debug("$ {} {}",
                 this.environment.entrySet().stream()
                         .map(entry -> entry.getKey() + "=" + entry.getValue())
                         .collect(Collectors.joining(" ")),
@@ -47,5 +47,14 @@ class ProcessBuilderHelmExecutor implements CommandExecutor {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    @Override
+    public String call(String command, List<String> args) throws CommandException {
+        var stdout = CommandExecutor.super.call(command, args);
+
+        log.debug("{}", stdout);
+
+        return stdout;
     }
 }
