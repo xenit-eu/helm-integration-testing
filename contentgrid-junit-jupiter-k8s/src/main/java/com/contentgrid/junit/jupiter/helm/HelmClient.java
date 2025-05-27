@@ -26,7 +26,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@ExtendWith(HelmClientExtension.class)
+@ExtendWith({HelmClientExtension.class, HelmChartHandleExtension.class})
 @Inherited
 public @interface HelmClient {
 
