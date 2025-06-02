@@ -6,11 +6,13 @@ import com.contentgrid.helm.HelmInstallCommand.InstallResult;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -44,7 +46,7 @@ class DefaultHelmInstallCommand implements HelmInstallCommand {
         // chart reference is required
         args.add(chart);
 
-        var handler = new DefaultInstallOptionsHandler(args, this.objectMapper);
+        var handler = new DefaultInstallOptionsHandler(args, this.objectMapper, !name.isEmpty());
         for (InstallOption option : options) {
             option.apply(handler);
         }
@@ -65,7 +67,7 @@ record DefaultInstallResult(String name, String namespace, long version, Map<Str
 
 }
 
-@RequiredArgsConstructor
+@AllArgsConstructor
 class DefaultInstallOptionsHandler implements InstallOptionsHandler {
 
     @NonNull
@@ -73,6 +75,8 @@ class DefaultInstallOptionsHandler implements InstallOptionsHandler {
 
     @NonNull
     protected final ObjectMapper objectMapper;
+
+    private boolean hasName;
 
     @Override
     public void namespace(String namespace) {
@@ -87,7 +91,13 @@ class DefaultInstallOptionsHandler implements InstallOptionsHandler {
 
     @Override
     public void generateName() {
-        arguments.add("--generate-name");
+        // TODO: Due to https://github.com/helm/helm/issues/30948, we can't actually use --generate-name. Implement our own variant
+        if(!hasName) {
+            // Chart name is in the first position.
+            // Use the same pattern that helm uses for charts with 'unknown' names: https://github.com/helm/helm/blob/4023c3b5ff5f884e4193ea76fa1a1334fa9076be/pkg/action/install.go#L699-L708
+            arguments.add(0, "chart-%d".formatted(Instant.now().getEpochSecond()));
+            hasName = true;
+        }
     }
 
     @Override

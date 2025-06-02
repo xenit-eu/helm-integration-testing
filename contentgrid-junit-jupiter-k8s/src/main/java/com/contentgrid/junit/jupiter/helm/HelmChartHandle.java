@@ -83,7 +83,6 @@ public class HelmChartHandle implements AutoCloseable {
 
     private List<InstallOption> createAdditionalOptions() {
         List<InstallOption> options = new ArrayList<>();
-        options.add(InstallOption.generateName());
 
         options.addAll(switch (configuration.namespace()) {
             case HelmChart.NAMESPACE_DEFAULT -> List.of();

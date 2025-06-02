@@ -56,8 +56,17 @@ class HelmIntegrationTest {
             assertThat(release.status()).isEqualTo("deployed");
         });
 
-        var uninstallResult = helm.uninstall().uninstall("nginx");
+        helm.uninstall().uninstall("nginx");
 
         assertThat(helm.list().releases()).isEmpty();
+    }
+
+    @Test
+    void installOCIWithGeneratedName() {
+        var result = helm.install()
+                .chart("oci://registry-1.docker.io/bitnamicharts/nginx:20.0.5");
+
+
+        helm.uninstall().uninstall(result.name());
     }
 }
