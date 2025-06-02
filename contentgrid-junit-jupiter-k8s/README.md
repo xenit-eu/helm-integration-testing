@@ -6,7 +6,7 @@ This project provides a set of JUnit Jupiter extensions to streamline testing wi
 
 *   **`@KubernetesTestCluster`:** Simplifies testing against a Kubernetes cluster. It supports different cluster providers (e.g., K3s, Kind) and automatically configures the Kubernetes client.
 *   **`@HelmClient`:** Injects a pre-configured `Helm` client into your tests, making it easy to interact with Helm deployments. Integrates seamlessly with `@KubernetesTestCluster` for end-to-end testing.
-*   **`@HelmTest`:** Simplifies Helm chart testing by automatically copying the specified chart to a temporary directory and making it available to the injected `Helm` client. Supports file system and classpath resources.
+*   **`@HelmChart`:** Simplifies Helm chart installation by automatically copying the specified chart to a temporary directory and making it available to the injected `Helm` client.
 *   **`@DockerRegistryCache`:** Starts a local Docker registry mirroring the specified remote registry. Useful for caching images and speeding up tests.  Integrates with `@KubernetesTestCluster` to automatically configure the cluster to use the local registry mirror.
 *   **`@FakeSecretStore`:** Provides a fake secret store implementation for testing external secret integrations.  Allows you to easily add secrets and verify that your application correctly retrieves them.
 
@@ -82,11 +82,11 @@ class MyHelmKubernetesTest {
 }
 ```
 
-### `@HelmTest`
+### `@HelmChart`
 
-HelmTest is a JUnit Jupiter extension that facilitates testing helm charts.
+HelmChart is an annotation that works together with the HelmClient JUnit Jupiter extension to install helm charts.
 
-This annotation implies @HelmClient, which injects a configured Helm instance into
+This annotation requires @HelmClient, which injects a configured Helm instance into
 JUnit Jupiter test instance fields, static fields, and method arguments.
 
 The referenced chart gets copied to the temporary working directory of the Helm client and chart repositories 
@@ -94,14 +94,30 @@ are installed in the ephemeral repository list of the Helm client.
 
 ```java
 import com.contentgrid.helm.Helm;
-import com.contentgrid.junit.jupiter.helm.HelmTest;
+import com.contentgrid.junit.jupiter.helm.HelmClient;
+import com.contentgrid.junit.jupiter.helm.HelmChart;
+import com.contentgrid.junit.jupiter.helm.HelmChartHandle;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@HelmTest(chart = "src/test/resources/fixtures/app") // Path to your Helm chart
+@HelmClient
 class MyHelmChartTest {
 
     Helm helm;
+
+    // Path to your Helm chart, installed in the default namespace
+    @HelmChart(chart = "file:src/test/resources/fixtures/app") 
+    static HelmChartReference appChart;
+
+    // External helm chart
+    @HelmChart(chart = "oci://registry-1.docker.io/bitnamicharts/nginx", namespace = HelmChart.NAMESPACE_ISOLATE)
+    static HelmChartHandle nginxChart;
+    
+    @BeforeAll
+    static void installCharts() {
+        nginxChart.install();
+        appChart.install();
+    }
 
     @Test
     void testHelmChart() {
