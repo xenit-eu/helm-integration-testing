@@ -1,8 +1,0 @@
-apiVersion: v2
-version: 0.1.0
-name: ExternalSecretsRenovateTarget
-description: "This chart is just for installing external-secrets, it's in a separate chart so that renovatebot can update the version of external-secrets."
-dependencies:
-  - name: external-secrets
-    version: 0.16.2
-    repository: "https://charts.external-secrets.io/"
