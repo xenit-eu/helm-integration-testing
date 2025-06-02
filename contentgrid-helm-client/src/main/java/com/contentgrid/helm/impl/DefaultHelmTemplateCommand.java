@@ -38,7 +38,7 @@ class DefaultHelmTemplateCommand implements HelmTemplateCommand {
         // chart reference is required
         args.add(chart);
 
-        var handler = new DefaultTemplateFlagHandler(args, objectMapper);
+        var handler = new DefaultTemplateFlagHandler(args, objectMapper, !name.isEmpty());
 
         flags.forEach(flag -> {
             flag.apply(handler);
@@ -52,8 +52,8 @@ class DefaultHelmTemplateCommand implements HelmTemplateCommand {
 
 class DefaultTemplateFlagHandler extends DefaultInstallOptionsHandler implements TemplateFlagHandler {
 
-    public DefaultTemplateFlagHandler(@NonNull List<String> arguments, @NonNull ObjectMapper objectMapper) {
-        super(arguments, objectMapper);
+    public DefaultTemplateFlagHandler(@NonNull List<String> arguments, @NonNull ObjectMapper objectMapper, boolean hasName) {
+        super(arguments, objectMapper, hasName);
     }
 
     @Override
