@@ -35,12 +35,12 @@ public class HelmChartHandleExtension implements HasHelmClient, BeforeEachCallba
     }
 
     private HelmChartHandle createHelmChartHandle(Field field, ExtensionContext context) {
-        return new HelmChartHandle(
-                getHelmClient(context),
-                field.getAnnotation(HelmChart.class),
-                context.getRequiredTestClass().getClassLoader(),
-                workingDirectory(context)
-        );
+        return HelmChartHandle.builder()
+                .helmClient(getHelmClient(context))
+                .resourceLoaderClass(context.getRequiredTestClass())
+                .unpackTempDir(workingDirectory(context))
+                .fromAnnotation(field.getAnnotation(HelmChart.class))
+                .build();
     }
 
     @Override

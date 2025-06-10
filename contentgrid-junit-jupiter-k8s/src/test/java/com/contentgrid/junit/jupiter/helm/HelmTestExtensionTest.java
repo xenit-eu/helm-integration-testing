@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtensionConfigurationException;
 
+@SuppressWarnings("deprecation")
 class HelmTestExtensionTest {
 
     @Nested
