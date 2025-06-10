@@ -86,7 +86,7 @@ class MyHelmKubernetesTest {
 
 HelmChart is an annotation that works together with the HelmClient JUnit Jupiter extension to install helm charts.
 
-This annotation requires @HelmClient, which injects a configured Helm instance into
+This annotation requires `@HelmClient`, which injects a configured Helm instance into
 JUnit Jupiter test instance fields, static fields, and method arguments.
 
 The referenced chart gets copied to the temporary working directory of the Helm client and chart repositories 
@@ -108,6 +108,10 @@ class MyHelmChartTest {
     // Path to your Helm chart, installed in the default namespace
     @HelmChart(chart = "file:src/test/resources/fixtures/app") 
     static HelmChartReference appChart;
+
+    // Helm chart on your classpath, installed in the 'from-classpath' namespace
+    @HelmChart(chart = "classpath:fixtures/app", namespace = "from-classpath")
+    static HelmChartReference classpathChart;
 
     // External helm chart
     @HelmChart(chart = "oci://registry-1.docker.io/bitnamicharts/nginx", namespace = HelmChart.NAMESPACE_ISOLATE)

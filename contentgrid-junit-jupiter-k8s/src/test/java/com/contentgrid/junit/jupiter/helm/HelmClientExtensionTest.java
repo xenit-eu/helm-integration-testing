@@ -3,10 +3,8 @@ package com.contentgrid.junit.jupiter.helm;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.contentgrid.helm.Helm;
-import com.contentgrid.helm.HelmInstallCommand.InstallResult;
 import com.contentgrid.junit.jupiter.k8s.KubernetesTestCluster;
 import io.fabric8.kubernetes.api.model.Namespace;
-import java.util.List;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -78,8 +76,11 @@ class HelmClientExtensionTest {
         @HelmChart(chart = "oci://registry-1.docker.io/bitnamicharts/nginx", namespace = "kube-system")
         HelmChartHandle explicitNamespace;
 
-        @HelmChart(chart = "classpath:fixtures/app", namespace = HelmChart.NAMESPACE_ISOLATE)
-        HelmChartHandle appChart;
+        @HelmChart(chart = "classpath:/fixtures/app", namespace = HelmChart.NAMESPACE_ISOLATE)
+        HelmChartHandle absoluteClasspath;
+
+        @HelmChart(chart = "classpath:empty-chart", namespace = HelmChart.NAMESPACE_ISOLATE)
+        HelmChartHandle relativeClasspath;
 
         // random ephemeral namespace created by fabric8 junit-jupiter integration
         Namespace namespace;
@@ -89,15 +90,19 @@ class HelmClientExtensionTest {
             var defaultResult = defaultChart.install();
             var isolatedResult = isolatedChart.install();
             var explicitNamespaceResult = explicitNamespace.install();
+            var absoluteClasspathHandle = absoluteClasspath.install();
+            var relativeClasspathHandle = relativeClasspath.install();
 
             assertThat(defaultResult.namespace()).isEqualTo(namespace.getMetadata().getName());
             assertThat(isolatedResult.namespace()).isNotEqualTo(defaultResult.namespace());
             assertThat(explicitNamespaceResult.namespace()).isEqualTo("kube-system");
-        }
 
-        @Test
-        void installClasspathHandle() {
-            appChart.install();
+            assertThat(absoluteClasspathHandle.namespace())
+                    .isNotEqualTo(isolatedResult.namespace())
+                    .isNotEqualTo(namespace.getMetadata().getName())
+            ;
+
+            assertThat(relativeClasspathHandle.namespace()).isNotEqualTo(absoluteClasspathHandle.namespace());
         }
     }
 }

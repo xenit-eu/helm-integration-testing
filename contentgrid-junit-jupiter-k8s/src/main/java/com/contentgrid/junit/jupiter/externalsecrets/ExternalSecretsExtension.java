@@ -1,20 +1,20 @@
 package com.contentgrid.junit.jupiter.externalsecrets;
 
 import static com.contentgrid.junit.jupiter.helpers.FieldHelper.findFields;
-import static com.contentgrid.junit.jupiter.k8s.K8sTestUtils.isCiliumNetworkPolicySupported;
-import static com.contentgrid.junit.jupiter.k8s.K8sTestUtils.waitUntilDeploymentsReady;
 import static org.apache.commons.lang3.RandomStringUtils.insecure;
 
 import com.contentgrid.helm.HelmInstallCommand.InstallOption;
 import com.contentgrid.junit.jupiter.helm.HasHelmClient;
+import com.contentgrid.junit.jupiter.helm.HelmChartHandle;
 import io.fabric8.junit.jupiter.HasKubernetesClient;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
@@ -30,29 +30,34 @@ import org.junit.jupiter.api.extension.ParameterResolver;
  * and {@link SecretStore} fields.
  */
 @Slf4j
-public class ExternalSecretsExtension implements HasHelmClient, HasKubernetesClient, BeforeAllCallback,
+public class ExternalSecretsExtension implements HasHelmClient, HasKubernetesClient, BeforeAllCallback, AfterAllCallback,
         BeforeEachCallback, ParameterResolver {
+
+    private static final Namespace NAMESPACE = Namespace.create(ExternalSecretsExtension.class);
+
+    private HelmChartHandle getHelmChartHandle(ExtensionContext context) {
+        return context.getStore(NAMESPACE).getOrComputeIfAbsent(HelmChartHandle.class, (clazz) -> {
+            return HelmChartHandle.builder()
+                    .helmClient(getHelmClient(context))
+                    .addChartRepositories(true)
+                    .chart(ExternalSecretsExtension.class.getResource("chart"))
+                    .isolatedNamespace()
+                    .build();
+        }, HelmChartHandle.class);
+    }
 
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
         var kubernetesClient = getClient(context);
 
-        if (isCiliumNetworkPolicySupported(kubernetesClient)) {
-            // Network policies to make sure external-secrets works
-            kubernetesClient.load(
-                            ExternalSecretsExtension.class.getResourceAsStream("/externalsecrets/networkpolicies.yaml"))
-                    .serverSideApply();
-        }
-
-        var helm = getHelmClient(context);
         // setup external-secrets-operator
-        helm.repository().add("external-secrets", "https://charts.external-secrets.io");
-        helm.install().chart("external-secrets", "external-secrets/external-secrets", InstallOption.version("v0.16.2"));
-
-        // wait until expected deployments have available-replica
-        waitUntilDeploymentsReady(2 * 60,
-                List.of("external-secrets-cert-controller", "external-secrets-webhook", "external-secrets"),
-                kubernetesClient);
+        var helmChart = getHelmChartHandle(context);
+        if(!helmChart.isInstalled()) {
+            log.info("Installing external-secrets helm chart");
+            // Installs chart and waits for the deployments to become ready
+            helmChart.install(InstallOption.arguments("--wait", "--timeout", "2m"));
+            log.info("external-secrets helm chart has been installed");
+        }
 
         // autowire static fields
         for (Field field : findFields(context, ClusterSecretStore.class, f -> Modifier.isStatic(f.getModifiers()))) {
@@ -121,5 +126,11 @@ public class ExternalSecretsExtension implements HasHelmClient, HasKubernetesCli
 
         // Truncate if needed
         return name.substring(0, Math.min(253, name.length()));
+    }
+
+    @Override
+    public void afterAll(ExtensionContext context) {
+        // Shutdown helm chart
+        getHelmChartHandle(context).close();
     }
 }

@@ -21,11 +21,13 @@ public @interface HelmChart {
     /**
      * A chart reference, a path to a packaged chart, a path to an unpacked chart directory or a URL
      * <p>
-     * Local paths can be to the {@code Chart.yaml} or its containing directory.
-     * A directory on the host filesystem can be referenced using the {@code file:} prefix, a classpath resource using the {@code classpath:} prefix.
-     * <p>
+     * Following chart formats are supported
+     * <ul>
+     *     <li>{@code file:} a directory on the host filesystem; relative to the current working directory
+     *     <li>{@code classpath:} a resource on the classpath; relative to the test class
+     *     <li>{@code oci://} an OCI helm chart. A version can optionally be supplied by using the format {@code oci://<repo>:<version>}
+     * </ul>
      *
-     * All other formats will be passed directly to {@code helm install}
      * @return chart reference
      */
     String chart();

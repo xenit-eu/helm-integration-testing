@@ -4,13 +4,11 @@ plugins {
     id 'io.freefair.lombok' version '8.13.1'
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+tasks.register("testResourcesJar", Jar) {
+    from(sourceSets.test.resources) {
+        into "resources-jar"
     }
-}
-repositories {
-    mavenCentral()
+    archiveClassifier = "test-resources"
 }
 
 dependencies {
@@ -36,10 +34,12 @@ dependencies {
     testImplementation 'org.assertj:assertj-core'
     testImplementation 'org.mockito:mockito-core'
     testImplementation 'org.skyscreamer:jsonassert'
+    testImplementation files(tasks.named("testResourcesJar"))
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testRuntimeOnly 'org.slf4j:slf4j-simple'
 }
+
 
 test {
     useJUnitPlatform()
