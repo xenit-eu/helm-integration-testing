@@ -17,7 +17,7 @@ jobs:
           java-version: 17
           cache: gradle
       - name: Test
-        run: ./gradlew check --info
+        run: ./gradlew check javadoc --info
 
   publish:
     needs:
