@@ -511,11 +511,11 @@ public class HelmChartHandle implements AutoCloseable {
          * <p>
          * Supported locations are:
          * <ul>
-         *     <li><code>file:</code></li> for resolving the chart relative to the current working directory
-         *     <li><code>classpath:</code></li> for resolving the chart from the classpath.
+         *     <li><code>file:</code> for resolving the chart relative to the current working directory
+         *     <li><code>classpath:</code> for resolving the chart from the classpath.
          *     Optionally, use {@link #resourceLoaderClass(Class)} or {@link #resourceClassLoader(ClassLoader)} to configure how the classpath should be resolved.
          *     If none is set, the context classloader for the current thread is used
-         *     <li><code>oci://</code></li> for using OCI charts
+         *     <li><code>oci://</code> for using OCI charts
          * </ul>
          *
          */
