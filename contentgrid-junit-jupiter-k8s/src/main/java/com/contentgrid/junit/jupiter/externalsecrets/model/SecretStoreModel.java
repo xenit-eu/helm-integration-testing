@@ -13,7 +13,7 @@ import org.yaml.snakeyaml.nodes.Tag;
  */
 public class SecretStoreModel {
 
-    private static final String API_VERSION = "external-secrets.io/v1beta1";
+    private static final String API_VERSION = "external-secrets.io/v1";
     private final String kind;
     private final String name;
     private final List<SecretData> secrets;
