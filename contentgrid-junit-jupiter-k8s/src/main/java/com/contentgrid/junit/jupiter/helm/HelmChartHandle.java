@@ -29,6 +29,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
 
 /**
  * A handle to a helm chart created by the {@link HelmChart @HelmChart} annotation.
@@ -36,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 @Builder
-public class HelmChartHandle implements AutoCloseable {
+public class HelmChartHandle implements CloseableResource {
 
     @NonNull
     private final Helm helmClient;
