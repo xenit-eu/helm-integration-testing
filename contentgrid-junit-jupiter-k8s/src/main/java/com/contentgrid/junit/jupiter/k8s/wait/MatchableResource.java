@@ -1,9 +1,6 @@
 package com.contentgrid.junit.jupiter.k8s.wait;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
-import io.fabric8.kubernetes.api.model.KubernetesResourceList;
-import io.fabric8.kubernetes.client.dsl.MixedOperation;
-import io.fabric8.kubernetes.client.dsl.Resource;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
@@ -39,9 +36,4 @@ interface MatchableResource<T extends HasMetadata> extends AutoCloseable {
     @Override
     void close();
 
-    /**
-     * Attach a resource accessor when none is attached yet
-     */
-    MatchableResource<T> tryUpgrade(
-            MixedOperation<T,? extends KubernetesResourceList<T>,? extends Resource<T>> resourceAccessor);
 }

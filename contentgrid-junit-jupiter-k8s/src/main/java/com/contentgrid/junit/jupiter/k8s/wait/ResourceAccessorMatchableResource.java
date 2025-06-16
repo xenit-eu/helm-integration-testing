@@ -12,12 +12,14 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 class ResourceAccessorMatchableResource<T extends HasMetadata> implements
         MatchableResource<T> {
 
+    @NonNull
     private final MixedOperation<T, ? extends KubernetesResourceList<T>, ? extends Resource<T>> resourceAccessor;
     private final Set<ResourceMatcher<? super T>> matchers = new HashSet<>();
     private final Set<ResourceMatcher<? super T>> exclusions = new HashSet<>();
@@ -60,11 +62,5 @@ class ResourceAccessorMatchableResource<T extends HasMetadata> implements
         for (var informer : informers.values()) {
             informer.close();
         }
-    }
-
-    @Override
-    public MatchableResource<T> tryUpgrade(
-            MixedOperation<T, ? extends KubernetesResourceList<T>, ? extends Resource<T>> resourceAccessor) {
-        return this;
     }
 }
