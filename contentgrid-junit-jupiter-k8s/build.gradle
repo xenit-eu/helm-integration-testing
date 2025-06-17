@@ -34,10 +34,10 @@ dependencies {
     testImplementation 'org.assertj:assertj-core'
     testImplementation 'org.mockito:mockito-core'
     testImplementation 'org.skyscreamer:jsonassert'
+    testImplementation 'ch.qos.logback:logback-classic'
     testImplementation files(tasks.named("testResourcesJar"))
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testRuntimeOnly 'org.slf4j:slf4j-simple'
 }
 
 

@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: test-job
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - image: bitnami/os-shell
+          name: hello
+          command:
+            - /bin/echo
+            - Hello from this job
+        - image: bitnami/os-shell
+          name: goodbye
+          command:
+            - /bin/echo
+            - Bye from this job
