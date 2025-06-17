@@ -65,7 +65,8 @@ public class KubernetesResourceWaiter implements AutoCloseable {
             Deployment.class, client -> client.apps().deployments(),
             StatefulSet.class, client -> client.apps().statefulSets(),
             DaemonSet.class, client -> client.apps().daemonSets(),
-            Job.class, client -> client.batch().v1().jobs()
+            Job.class, client -> client.batch().v1().jobs(),
+            ReplicaSet.class, client -> client.apps().replicaSets()
     );
 
     static {
@@ -246,7 +247,7 @@ public class KubernetesResourceWaiter implements AutoCloseable {
      * Custom awaitility {@link ConditionEvaluationListener} that prints events and logs for resources that are not ready after the timeout
      */
     @RequiredArgsConstructor
-    private static class ConditionEvaluationListenerImpl implements ConditionEvaluationListener<List<? extends AwaitableResource>> {
+    private class ConditionEvaluationListenerImpl implements ConditionEvaluationListener<List<? extends AwaitableResource>> {
         private static final ConditionEvaluationListener<Object> LOGGER = new ConditionEvaluationLogger(log::info, TimeUnit.SECONDS);
         private final AtomicReference<List<? extends AwaitableResource>> lastFailingCondition = new AtomicReference<>();
 
@@ -262,7 +263,7 @@ public class KubernetesResourceWaiter implements AutoCloseable {
 
         @Override
         public void beforeEvaluation(StartEvaluationEvent<List<? extends AwaitableResource>> startEvaluationEvent) {
-            LOGGER.beforeEvaluation((StartEvaluationEvent) startEvaluationEvent);
+            log.info("Waiting for <{}>", resources().toList());
         }
 
         @Override

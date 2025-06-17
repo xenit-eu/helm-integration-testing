@@ -4,6 +4,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.contentgrid.junit.jupiter.k8s.wait.KubernetesResourceWaiter;
 import com.contentgrid.junit.jupiter.k8s.wait.ResourceMatcher;
+import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.util.List;
 import java.util.function.UnaryOperator;
@@ -48,6 +49,18 @@ public class K8sTestUtils {
             KubernetesClient kubernetesClient, String namespace) {
         new KubernetesResourceWaiter(kubernetesClient)
                 .statefulSets(ResourceMatcher.named(statefulSets.toArray(String[]::new)).inNamespace(namespace))
+                .await(createAwait(timeout));
+    }
+
+    public static void waitUntilReplicaSetsReady(int timeout, List<String> replicaSets, KubernetesClient kubernetesClient) {
+        new KubernetesResourceWaiter(kubernetesClient)
+                .include(ReplicaSet.class, ResourceMatcher.named(replicaSets.toArray(String[]::new)))
+                .await(createAwait(timeout));
+    }
+
+    public static void waitUntilReplicaSetsReady(int timeout, List<String> replicaSets, KubernetesClient kubernetesClient, String namespace) {
+        new KubernetesResourceWaiter(kubernetesClient)
+                .include(ReplicaSet.class, ResourceMatcher.named(replicaSets.toArray(String[]::new)).inNamespace(namespace))
                 .await(createAwait(timeout));
     }
 }

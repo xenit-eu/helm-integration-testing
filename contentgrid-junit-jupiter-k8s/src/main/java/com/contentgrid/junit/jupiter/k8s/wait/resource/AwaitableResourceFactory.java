@@ -16,7 +16,4 @@ public class AwaitableResourceFactory {
         return factories.get(resource.getClass()).instantiate(client, this, resource);
     }
 
-    public boolean supports(KubernetesResource resource) {
-        return factories.containsKey(resource.getClass());
-    }
 }

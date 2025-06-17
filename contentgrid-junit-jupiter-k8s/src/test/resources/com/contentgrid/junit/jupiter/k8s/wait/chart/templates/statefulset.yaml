@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: test-nginx-sts
+  labels:
+    type: webserver
+    app: nginx
+spec:
+  serviceName: "test-nginx-sts-headless"
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+      kind: sts
+  template:
+    metadata:
+      labels:
+        app: nginx
+        kind: sts
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.21
+          ports:
+            - containerPort: 80
+              name: http

@@ -19,9 +19,8 @@ public interface ResourceMatcher<T extends HasMetadata> extends Predicate<T> {
      * @param <T> The type of the resource
      */
     static <T extends HasMetadata> ResourceMatcher<T> labelled(@NonNull Map<String, String> labels) {
-        return o -> o.getMetadata().getLabels().entrySet()
-                .stream()
-                .allMatch(entry -> !labels.containsKey(entry.getKey()) || Objects.equals(entry.getValue(), labels.get(entry.getKey())));
+        return o -> labels.entrySet().stream()
+                .allMatch(entry -> Objects.equals(o.getMetadata().getLabels().get(entry.getKey()), entry.getValue()));
     }
 
     /**
@@ -30,9 +29,8 @@ public interface ResourceMatcher<T extends HasMetadata> extends Predicate<T> {
      * @param <T> The type of the resource
      */
     static <T extends HasMetadata> ResourceMatcher<T> annotated(@NonNull Map<String, String> annotations) {
-        return o -> o.getMetadata().getAnnotations().entrySet()
-                .stream()
-                .allMatch(entry -> !annotations.containsKey(entry.getKey()) || Objects.equals(entry.getValue(), annotations.get(entry.getKey())));
+        return o -> annotations.entrySet().stream()
+                .allMatch(entry -> Objects.equals(o.getMetadata().getAnnotations().get(entry.getKey()), entry.getValue()));
     }
 
     /**
