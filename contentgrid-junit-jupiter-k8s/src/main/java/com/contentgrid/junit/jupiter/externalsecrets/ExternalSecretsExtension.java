@@ -30,7 +30,7 @@ import org.junit.jupiter.api.extension.ParameterResolver;
  * and {@link SecretStore} fields.
  */
 @Slf4j
-public class ExternalSecretsExtension implements HasHelmClient, HasKubernetesClient, BeforeAllCallback, AfterAllCallback,
+public class ExternalSecretsExtension implements HasHelmClient, HasKubernetesClient, BeforeAllCallback,
         BeforeEachCallback, ParameterResolver {
 
     private static final Namespace NAMESPACE = Namespace.create(ExternalSecretsExtension.class);
@@ -126,11 +126,5 @@ public class ExternalSecretsExtension implements HasHelmClient, HasKubernetesCli
 
         // Truncate if needed
         return name.substring(0, Math.min(253, name.length()));
-    }
-
-    @Override
-    public void afterAll(ExtensionContext context) {
-        // Shutdown helm chart
-        getHelmChartHandle(context).close();
     }
 }
