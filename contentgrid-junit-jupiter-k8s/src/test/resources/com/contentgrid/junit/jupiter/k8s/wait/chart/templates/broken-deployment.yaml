@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: broken-deploy
+  labels:
+    type: webserver
+    app: broken
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: broken
+      kind: depl
+  template:
+    metadata:
+      labels:
+        app: broken
+        kind: depl
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.21
+          ports:
+            - containerPort: 80
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready # This endpoint doesn't exist in nginx
+              port: http
+            periodSeconds: 10
