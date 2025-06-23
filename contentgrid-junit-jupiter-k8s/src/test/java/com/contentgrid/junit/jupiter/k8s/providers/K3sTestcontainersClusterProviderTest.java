@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 import lombok.RequiredArgsConstructor;
-import com.contentgrid.junit.jupiter.k8s.providers.K3sTestcontainersClusterProvider.K3sRegistriesConfiguration;
 import org.junit.jupiter.api.Test;
 
 class K3sTestcontainersClusterProviderTest {
@@ -15,10 +14,9 @@ class K3sTestcontainersClusterProviderTest {
             k3s.addDockerRegistryMirror("docker.io", "http://localhost:5000");
             k3s.addDockerRegistryMirror("quay.io", "https://mirror.example.com/");
 
-            var config = k3s.registriesConfig();
-            var yaml = k3s.registriesConfigYaml(config);
-
-            assertThat(yaml).hasValue("""
+            k3s.configure(RegistryMirrorsK3sContainerCustomizer.class, mirrors -> {
+                var yaml = mirrors.createRegistriesYaml();
+                assertThat(yaml).hasValue("""
                     mirrors:
                       docker.io:
                         endpoint:
@@ -27,16 +25,20 @@ class K3sTestcontainersClusterProviderTest {
                         endpoint:
                           - "https://mirror.example.com/"
                     """);
+
+                return mirrors;
+            });
         }
     }
 
     @Test
     void testEmptyConfig() {
         try (var k3s = new K3sTestcontainersClusterProvider()) {
-            var config = new K3sRegistriesConfiguration();
-            var yaml = k3s.registriesConfigYaml(config);
-
-            assertThat(yaml).isEmpty();
+            k3s.configure(RegistryMirrorsK3sContainerCustomizer.class, mirrors -> {
+                var yaml = mirrors.createRegistriesYaml();
+                assertThat(yaml).isEmpty();
+                return mirrors;
+            });
         }
     }
 
