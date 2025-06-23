@@ -84,7 +84,7 @@ public class KubernetesResourceWaiter implements AutoCloseable {
             @NonNull
             Class<T> type
     ) {
-        return (MatchableResource<T>) matchableResources.computeIfAbsent((Class<HasMetadata>)type, (t) -> new ResourceAccessorMatchableResource<>(
+        return (MatchableResource<T>) matchableResources.computeIfAbsent((Class<HasMetadata>)type, (t) -> new MatchableResource<>(
                 (MixedOperation<HasMetadata, ? extends KubernetesResourceList<HasMetadata>, ? extends Resource<HasMetadata>>) RESOURCE_ACCESSORS.get(t).apply(client)
         ));
     }
