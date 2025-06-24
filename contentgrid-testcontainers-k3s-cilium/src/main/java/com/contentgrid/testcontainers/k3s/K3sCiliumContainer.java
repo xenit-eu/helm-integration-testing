@@ -19,13 +19,11 @@ public class K3sCiliumContainer extends CustomizableK3sContainer {
     }
 
     public K3sCiliumContainer(DockerImageName k3sDockerImage, boolean defaultDeny) {
-        super(k3sDockerImage, List.of(
-                new CiliumK3sContainerCustomizer(),
-                new TraefikIngressK3sContainerCustomizer()
-        ));
-
+        super(k3sDockerImage);
+        configure(CiliumK3sContainerCustomizer.class);
+        configure(TraefikIngressK3sContainerCustomizer.class);
         if(defaultDeny) {
-            customize(new DefaultDenyCiliumK3sContainerCustomizer());
+            configure(DefaultDenyCiliumK3sContainerCustomizer.class);
         }
     }
 

@@ -8,7 +8,6 @@ import com.contentgrid.testcontainers.k3s.customizer.ingress.TraefikIngressK3sCo
  * <code>
  *     class CustomClusterProvider extends K3sTestcontainersClusterProvider {
  *          public CustomClusterProvider() {
- *              super();
  *              configure(DefaultDenyCiliumK3sContainerCustomizer.class);
  *              configure(TraefikIngressK3sContainerCustomizer.class);
  *          }
@@ -21,10 +20,8 @@ import com.contentgrid.testcontainers.k3s.customizer.ingress.TraefikIngressK3sCo
 public class K3sCiliumDefaultDenyCoreDNSClusterProvider extends K3sTestcontainersClusterProvider {
 
     public K3sCiliumDefaultDenyCoreDNSClusterProvider() {
-        super(
-                new DefaultDenyCiliumK3sContainerCustomizer(),
-                new TraefikIngressK3sContainerCustomizer()
-        );
+        configure(TraefikIngressK3sContainerCustomizer.class);
+        configure(DefaultDenyCiliumK3sContainerCustomizer.class);
     }
 
 }

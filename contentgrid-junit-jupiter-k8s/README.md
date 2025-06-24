@@ -42,7 +42,6 @@ class MyKubernetesTest {
     public static class CustomClusterProvider extends K3sTestcontainersClusterProvider {
         
         public CustomClusterProvider() {
-            super();
             customize(container -> {
                 // modify the K3sContainer directly
             });

@@ -32,16 +32,7 @@ public class K3sTestcontainersClusterProvider implements KubernetesClusterProvid
     private final FreezableK3sContainerCustomizersImpl customizers = new FreezableK3sContainerCustomizersImpl();
 
     public K3sTestcontainersClusterProvider() {
-        this(List.of());
-    }
-
-    protected K3sTestcontainersClusterProvider(K3sContainerCustomizer... customizers) {
-        this(Arrays.asList(customizers));
-    }
-
-    protected K3sTestcontainersClusterProvider(List<K3sContainerCustomizer> customizers) {
         this(new K3sContainer(IMAGE_RANCHER_K3S));
-        customize(customizers);
     }
 
     @Override
