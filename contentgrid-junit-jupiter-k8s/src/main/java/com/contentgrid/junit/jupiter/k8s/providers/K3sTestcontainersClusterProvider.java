@@ -14,6 +14,9 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.k3s.K3sContainer;
 import org.testcontainers.utility.DockerImageName;
 
+/**
+ * Provides a kubernetes cluster by using a K3S docker container, optionally customized with {@link K3sContainerCustomizer}s
+ */
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class K3sTestcontainersClusterProvider implements KubernetesClusterProvider,
