@@ -1,9 +1,8 @@
 package com.contentgrid.testcontainers.k3s;
 
-import com.contentgrid.testcontainers.k3s.customizer.FreezableK3sContainerCustomizersImpl;
+import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizersImpl;
 import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizer;
 import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizers;
-import java.util.List;
 import lombok.experimental.Delegate;
 import org.testcontainers.k3s.K3sContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -14,7 +13,7 @@ import org.testcontainers.utility.DockerImageName;
 public class CustomizableK3sContainer extends K3sContainer implements K3sContainerCustomizers {
 
     @Delegate(types = {K3sContainerCustomizers.class})
-    private final FreezableK3sContainerCustomizersImpl customizers = new FreezableK3sContainerCustomizersImpl();
+    private final K3sContainerCustomizersImpl customizers = new K3sContainerCustomizersImpl();
 
     public CustomizableK3sContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
@@ -24,7 +23,6 @@ public class CustomizableK3sContainer extends K3sContainer implements K3sContain
     public void start() {
         if(getContainerId() == null) {
             customizers.customize(this);
-            customizers.freeze();
         }
         super.start();
     }

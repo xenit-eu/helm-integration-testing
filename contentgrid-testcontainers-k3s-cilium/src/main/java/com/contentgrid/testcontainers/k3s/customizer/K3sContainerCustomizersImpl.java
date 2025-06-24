@@ -11,7 +11,7 @@ import org.testcontainers.k3s.K3sContainer;
 /**
  * Implementation of {@link K3sContainerCustomizers} that can be frozen after the container has been started
  */
-public class FreezableK3sContainerCustomizersImpl implements K3sContainerCustomizer, K3sContainerCustomizers {
+public class K3sContainerCustomizersImpl implements K3sContainerCustomizer, K3sContainerCustomizers {
     private boolean isFrozen;
     private final Map<Class<? extends K3sContainerCustomizer>, K3sContainerCustomizer> customizers = new LinkedHashMap<>();
 
@@ -61,13 +61,6 @@ public class FreezableK3sContainerCustomizersImpl implements K3sContainerCustomi
         }
     }
 
-    /**
-     * Freeze the customizers, so they can not be changed anymore
-     */
-    public void freeze() {
-        isFrozen = true;
-    }
-
     private void checkFrozen() {
         if(isFrozen) {
             throw new IllegalStateException("Customizers are frozen because the container is already started");
@@ -76,8 +69,8 @@ public class FreezableK3sContainerCustomizersImpl implements K3sContainerCustomi
 
     @Override
     public void customize(K3sContainer container) {
+        isFrozen = true;
         customizers.forEach((clazz, customizer) -> customizer.customize(container));
     }
-
 
 }

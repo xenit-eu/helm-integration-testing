@@ -2,9 +2,7 @@ package com.contentgrid.junit.jupiter.k8s.providers;
 
 import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizer;
 import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizers;
-import com.contentgrid.testcontainers.k3s.customizer.FreezableK3sContainerCustomizersImpl;
-import java.util.Arrays;
-import java.util.List;
+import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizersImpl;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +27,7 @@ public class K3sTestcontainersClusterProvider implements KubernetesClusterProvid
 
     @NonNull
     @Delegate(types = K3sContainerCustomizers.class)
-    private final FreezableK3sContainerCustomizersImpl customizers = new FreezableK3sContainerCustomizersImpl();
+    private final K3sContainerCustomizersImpl customizers = new K3sContainerCustomizersImpl();
 
     public K3sTestcontainersClusterProvider() {
         this(new K3sContainer(IMAGE_RANCHER_K3S));
@@ -49,8 +47,6 @@ public class K3sTestcontainersClusterProvider implements KubernetesClusterProvid
         log.info("Starting k3s: {}", String.join(" ", this.container.getCommandParts()));
 
         this.customizers.customize(this.container);
-        this.customizers.freeze();
-
         this.container.start();
 
         return new DelegatedKubernetesProviderResult(this.container.getKubeConfigYaml(), this::stop);
