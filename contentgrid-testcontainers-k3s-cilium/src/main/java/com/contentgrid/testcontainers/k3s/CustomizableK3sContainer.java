@@ -17,12 +17,7 @@ public class CustomizableK3sContainer extends K3sContainer implements K3sContain
     private final FreezableK3sContainerCustomizersImpl customizers = new FreezableK3sContainerCustomizersImpl();
 
     public CustomizableK3sContainer(DockerImageName dockerImageName) {
-        this(dockerImageName, List.of());
-    }
-
-    public CustomizableK3sContainer(DockerImageName dockerImageName, Iterable<K3sContainerCustomizer> customizers) {
         super(dockerImageName);
-        this.customize(customizers);
     }
 
     @Override
