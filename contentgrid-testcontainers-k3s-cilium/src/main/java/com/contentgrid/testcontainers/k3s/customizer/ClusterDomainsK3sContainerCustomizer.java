@@ -1,9 +1,16 @@
 package com.contentgrid.testcontainers.k3s.customizer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator.Feature;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.k3s.K3sContainer;
 
@@ -17,6 +24,10 @@ import org.testcontainers.k3s.K3sContainer;
 @RequiredArgsConstructor
 @EqualsAndHashCode
 public class ClusterDomainsK3sContainerCustomizer implements K3sContainerCustomizer {
+    private static final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory()
+            .disable(Feature.WRITE_DOC_START_MARKER)
+            .enable(Feature.INDENT_ARRAYS_WITH_INDICATOR)
+    );
     private final Set<String> domains;
 
     public ClusterDomainsK3sContainerCustomizer() {
@@ -43,26 +54,30 @@ public class ClusterDomainsK3sContainerCustomizer implements K3sContainerCustomi
         );
     }
 
+    @SneakyThrows(JsonProcessingException.class)
     private String createCorednsConfig() {
-        var template =
-                """
-                apiVersion: v1
-                kind: ConfigMap
-                metadata:
-                  name: coredns-custom
-                  namespace: kube-system
-                data:
-                  helm-integration-testing.test.server: |
-                    helm-integration-testing.test:53 {
-                        errors
-                        hosts {
-                            172.17.0.1 %s
-                            fallthrough
-                        }
-                        forward . 127.0.0.1
+        var configData = domains.stream().collect(Collectors.toMap(domain -> domain+".server", this::createDomainConfig));
+
+        var config = Map.of(
+                "apiVersion", "v1",
+                "kind", "ConfigMap",
+                "metadata", Map.of(
+                        "name", "coredns-custom",
+                        "namespace", "kube-system"
+                ),
+                "data", configData
+        );
+
+        return yamlMapper.writeValueAsString(config);
+    }
+
+    private String createDomainConfig(String domain) {
+        return """
+                %1$s:53 {
+                    hosts {
+                        172.17.0.1 %1$s
                     }
-                """;
-        var domainString = String.join(" ", domains);
-        return template.formatted(domainString);
+                }
+                """.formatted(domain);
     }
 }

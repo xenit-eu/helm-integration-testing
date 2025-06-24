@@ -224,13 +224,14 @@ public class KubernetesResourceWaiter implements AutoCloseable {
      * Wait for all resources to be ready
      * @param configuration Configure {@link Awaitility}
      */
-    public void await(@NonNull UnaryOperator<ConditionFactory> configuration) {
+    public KubernetesResourceWaiter await(@NonNull UnaryOperator<ConditionFactory> configuration) {
         configuration.apply(
                         Awaitility.await()
                                 .conditionEvaluationListener(new ConditionEvaluationListenerImpl())
                 )
                 .until(() -> this.nonReadyResources().toList(), Matchers.empty());
 
+        return this;
     }
 
     /**

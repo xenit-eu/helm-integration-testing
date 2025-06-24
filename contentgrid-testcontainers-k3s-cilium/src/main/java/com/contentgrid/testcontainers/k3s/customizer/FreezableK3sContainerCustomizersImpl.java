@@ -3,6 +3,7 @@ package com.contentgrid.testcontainers.k3s.customizer;
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.UnaryOperator;
 import lombok.SneakyThrows;
 import org.testcontainers.k3s.K3sContainer;
@@ -30,14 +31,19 @@ public class FreezableK3sContainerCustomizersImpl implements K3sContainerCustomi
     @Override
     public <T extends K3sContainerCustomizer> K3sContainerCustomizers configure(Class<T> customizerClass, UnaryOperator<T> configurer) {
         checkFrozen();
-        customizers.compute(customizerClass, (clazz, existing) -> {
+        AtomicBoolean wasRegistered = new AtomicBoolean(false);
+        var customizer = customizers.compute(customizerClass, (clazz, existing) -> {
             if(existing == null) {
                 existing = instantiate(customizerClass);
-                existing.onRegister(this);
+                wasRegistered.set(true);
             }
 
             return configurer.apply((T)existing);
-        }).onConfigure(this);
+        });
+        if(wasRegistered.get()) {
+            customizer.onRegister(this);
+        }
+        customizer.onConfigure(this);
 
         return this;
     }

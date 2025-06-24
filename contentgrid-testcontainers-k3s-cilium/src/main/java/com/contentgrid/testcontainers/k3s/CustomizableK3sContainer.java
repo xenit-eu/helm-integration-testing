@@ -27,7 +27,7 @@ public class CustomizableK3sContainer extends K3sContainer implements K3sContain
 
     @Override
     public void start() {
-        if(getContainerId() != null) {
+        if(getContainerId() == null) {
             customizers.customize(this);
             customizers.freeze();
         }
