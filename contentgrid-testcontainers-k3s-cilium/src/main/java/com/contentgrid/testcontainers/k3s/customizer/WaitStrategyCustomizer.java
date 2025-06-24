@@ -1,8 +1,12 @@
 package com.contentgrid.testcontainers.k3s.customizer;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
@@ -21,39 +25,56 @@ import org.testcontainers.k3s.K3sContainer;
  */
 @RequiredArgsConstructor
 public class WaitStrategyCustomizer implements K3sContainerCustomizer {
-    private final WaitStrategy waitStrategy;
+    private final Set<Class<?>> strategiesToSuppress;
+    private final Map<Class<?>, WaitStrategy> strategies;
 
     public WaitStrategyCustomizer() {
-        // This is the default wait strategy of K3sContainer
-        this(Wait.forLogMessage(".*Node controller sync successful.*", 1));
+        this(
+                Set.of(),
+                Map.of(
+                        // This is the default wait strategy of K3sContainer
+                        K3sContainer.class,
+                        Wait.forLogMessage(".*Node controller sync successful.*", 1)
+                )
+        );
     }
 
     @Override
     public void customize(K3sContainer container) {
-        container.waitingFor(waitStrategy);
+
+        var finalStrategies = strategies.entrySet()
+                .stream()
+                .filter(entry -> !strategiesToSuppress.contains(entry.getKey()))
+                .map(Entry::getValue)
+                .toList();
+
+        container.waitingFor(new CompositeWaitStrategy(finalStrategies));
     }
 
-    public WaitStrategyCustomizer withAdditionalWaitStrategy(WaitStrategy additionalStrategy) {
-        return new WaitStrategyCustomizer(CompositeWaitStrategy.from(this.waitStrategy, additionalStrategy));
+    /**
+     * Omit a wait strategy
+     * @param source The source of the wait strategy to omit
+     */
+    public WaitStrategyCustomizer suppressWaitStrategy(Class<?> source) {
+        var toOmitCopy = new HashSet<>(strategiesToSuppress);
+        toOmitCopy.add(source);
+        return new WaitStrategyCustomizer(toOmitCopy, strategies);
+    }
+
+    /**
+     * Adds an additional wait strategy
+     * @param source The source of the wait strategy (typically the class of the caller)
+     * @param additionalStrategy The wait strategy to add
+     */
+    public WaitStrategyCustomizer withAdditionalWaitStrategy(Class<?> source, WaitStrategy additionalStrategy) {
+        var strategiesCopy = new LinkedHashMap<>(strategies);
+        strategiesCopy.put(source, additionalStrategy);
+        return new WaitStrategyCustomizer(strategiesToSuppress, strategiesCopy);
     }
 
     @RequiredArgsConstructor
     private static class CompositeWaitStrategy implements WaitStrategy {
-        private final List<WaitStrategy> strategies;
-
-        public static WaitStrategy from(WaitStrategy waitStrategy, WaitStrategy additionalStrategy) {
-            var strategies = new ArrayList<WaitStrategy>();
-            strategies.addAll(allStrategies(waitStrategy));
-            strategies.addAll(allStrategies(additionalStrategy));
-            return new CompositeWaitStrategy(strategies);
-        }
-
-        private static List<WaitStrategy> allStrategies(WaitStrategy strategy) {
-            if (strategy instanceof CompositeWaitStrategy compositeWaitStrategy) {
-                return compositeWaitStrategy.strategies;
-            }
-            return List.of(strategy);
-        }
+        private final Collection<WaitStrategy> strategies;
 
         @Override
         @SneakyThrows({InterruptedException.class, ExecutionException.class})
