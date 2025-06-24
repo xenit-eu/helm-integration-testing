@@ -9,6 +9,7 @@ import io.fabric8.kubernetes.client.readiness.Readiness;
 import java.io.BufferedReader;
 import java.io.Reader;
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.stream.Stream;
@@ -73,11 +74,17 @@ public class PodAwaitableResource extends AbstractAwaitableResource<Pod> {
 
     private LogLine createLogLine(String line, String container) {
         var firstSpace = line.indexOf(' ');
-        var timestamp = line.substring(0, firstSpace);
-        var logLine = line.substring(firstSpace+1);
+        Instant timestamp = null;
+        String logLine = line;
+        try {
+            timestamp = Instant.parse(line.substring(0, firstSpace));
+            logLine = line.substring(firstSpace + 1);
+        } catch(DateTimeParseException ex) {
+            // Timestamp can not be parsed, leave as null and have the full line as logline
+        }
         return new LogLine(
                 this,
-                Instant.parse(timestamp),
+                timestamp,
                 container,
                 logLine
         );

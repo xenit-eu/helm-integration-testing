@@ -19,7 +19,10 @@ public class TraefikIngressK3sContainerCustomizer implements K3sContainerCustomi
 
     @Override
     public void onRegister(K3sContainerCustomizers customizers) {
-        customizers.configure(WaitStrategyCustomizer.class, wait -> wait.withAdditionalWaitStrategy(Wait.forLogMessage(".*\"Observed pod startup duration\" pod=\"kube-system/traefik-.*", 1)));
+        customizers.configure(WaitStrategyCustomizer.class, wait -> wait.withAdditionalWaitStrategy(
+                getClass(),
+                Wait.forLogMessage(".*\"Observed pod startup duration\" pod=\"kube-system/traefik-.*", 1))
+        );
     }
 
     @Override

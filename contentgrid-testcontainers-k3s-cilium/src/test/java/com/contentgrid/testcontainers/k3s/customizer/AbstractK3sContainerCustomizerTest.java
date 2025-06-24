@@ -5,14 +5,17 @@ import com.contentgrid.junit.jupiter.k8s.wait.ResourceMatcher;
 import com.contentgrid.testcontainers.k3s.CustomizableK3sContainer;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
+import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobBuilder;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
@@ -35,6 +38,10 @@ public abstract class AbstractK3sContainerCustomizerTest {
     }
 
     protected void assertScript(KubernetesClient kubernetesClient, String image, String shell) {
+        assertScript(kubernetesClient, image, shell, UnaryOperator.identity());
+    }
+
+    protected void assertScript(KubernetesClient kubernetesClient, String image, String shell, UnaryOperator<Job> configuration) {
         var ns = kubernetesClient.namespaces()
                 .resource(new NamespaceBuilder()
                         .withNewMetadata()
@@ -42,8 +49,6 @@ public abstract class AbstractK3sContainerCustomizerTest {
                         .endMetadata()
                         .build())
                 .create();
-
-
 
         var configmap = kubernetesClient.configMaps()
                 .inNamespace(ns.getMetadata().getName())
@@ -54,9 +59,12 @@ public abstract class AbstractK3sContainerCustomizerTest {
                         .addToData("script.sh", shell)
                         .build())
                 .create();
+        var uuid = UUID.randomUUID();
+
+
         var job = kubernetesClient.batch().v1().jobs()
                 .inNamespace(ns.getMetadata().getName())
-                .resource(new JobBuilder()
+                .resource(configuration.apply(new JobBuilder()
                         .withNewMetadata()
                         .withGenerateName("run-script-")
                         .endMetadata()
@@ -67,10 +75,10 @@ public abstract class AbstractK3sContainerCustomizerTest {
                         .addNewContainer()
                         .withName("test")
                         .withImage(image)
-                        .withCommand("bash", "/opt/script.sh")
+                        .withCommand("bash", "/opt/"+uuid+"/script.sh")
                         .addNewVolumeMount()
                         .withName("script")
-                        .withMountPath("/opt")
+                        .withMountPath("/opt/"+uuid)
                         .endVolumeMount()
                         .endContainer()
                         .addNewVolume()
@@ -83,8 +91,9 @@ public abstract class AbstractK3sContainerCustomizerTest {
                         .endTemplate()
                         .endSpec()
                         .build()
-                )
+                ))
                 .create();
+
 
         new KubernetesResourceWaiter(kubernetesClient)
                 .jobs(ResourceMatcher.named(job.getMetadata().getName()).inNamespace(ns.getMetadata().getName()))
