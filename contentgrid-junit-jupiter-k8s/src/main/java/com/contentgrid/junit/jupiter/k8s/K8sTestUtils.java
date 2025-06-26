@@ -29,38 +29,44 @@ public class K8sTestUtils {
 
         new KubernetesResourceWaiter(kubernetesClient)
                 .deployments(ResourceMatcher.named(deployments.toArray(String[]::new)).inNamespace(namespace))
-                .await(createAwait(timeout));
+                .await(createAwait(timeout))
+                .close();
     }
 
     public static void waitUntilDeploymentsReady(int timeout, List<String> deployments,
             KubernetesClient kubernetesClient) {
         new KubernetesResourceWaiter(kubernetesClient)
                 .deployments(ResourceMatcher.named(deployments.toArray(String[]::new)))
-                .await(createAwait(timeout));
+                .await(createAwait(timeout))
+                .close();
     }
 
     public static void waitUntilStatefulSetsReady(int timeout, List<String> statefulSets, KubernetesClient kubernetesClient) {
         new KubernetesResourceWaiter(kubernetesClient)
                 .statefulSets(ResourceMatcher.named(statefulSets.toArray(String[]::new)))
-                .await(createAwait(timeout));
+                .await(createAwait(timeout))
+                .close();
     }
 
     public static void waitUntilStatefulSetsReady(int timeout, List<String> statefulSets,
             KubernetesClient kubernetesClient, String namespace) {
         new KubernetesResourceWaiter(kubernetesClient)
                 .statefulSets(ResourceMatcher.named(statefulSets.toArray(String[]::new)).inNamespace(namespace))
-                .await(createAwait(timeout));
+                .await(createAwait(timeout))
+                .close();
     }
 
     public static void waitUntilReplicaSetsReady(int timeout, List<String> replicaSets, KubernetesClient kubernetesClient) {
         new KubernetesResourceWaiter(kubernetesClient)
                 .include(ReplicaSet.class, ResourceMatcher.named(replicaSets.toArray(String[]::new)))
-                .await(createAwait(timeout));
+                .await(createAwait(timeout))
+                .close();
     }
 
     public static void waitUntilReplicaSetsReady(int timeout, List<String> replicaSets, KubernetesClient kubernetesClient, String namespace) {
         new KubernetesResourceWaiter(kubernetesClient)
                 .include(ReplicaSet.class, ResourceMatcher.named(replicaSets.toArray(String[]::new)).inNamespace(namespace))
-                .await(createAwait(timeout));
+                .await(createAwait(timeout))
+                .close();
     }
 }

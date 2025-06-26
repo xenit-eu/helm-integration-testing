@@ -30,12 +30,29 @@ ls -ltr /tmp/kubeconfig*.yml
 
 ```java
 import com.contentgrid.junit.jupiter.k8s.KubernetesTestCluster;
+import com.contentgrid.junit.jupiter.k8s.providers.K3sTestcontainersClusterProvider;
+import com.contentgrid.testcontainers.k3s.customizer.ClusterDomainsK3sContainerCustomizer;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@KubernetesTestCluster
+@KubernetesTestCluster(providers = CustomClusterProvider.class)
 class MyKubernetesTest {
+    
+    public static class CustomClusterProvider extends K3sTestcontainersClusterProvider {
+        
+        public CustomClusterProvider() {
+            customize(container -> {
+                // modify the K3sContainer directly
+            });
+            
+            // Or use pre-defined customizers to set up some aspects
+            configure(
+                    ClusterDomainsK3sContainerCustomizer.class,
+                    domains -> domains.withDomains("example.test")
+            );
+        }
+    }
 
     static KubernetesClient kubernetesClient; // Injected Kubernetes client
 

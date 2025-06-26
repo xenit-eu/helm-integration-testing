@@ -20,7 +20,6 @@ public interface AwaitableResource {
     record LogLine(
             @NonNull
             AwaitableResource resource,
-            @NonNull
             Instant timestamp,
             @NonNull
             String container,
