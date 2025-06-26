@@ -8,8 +8,8 @@ import org.testcontainers.k3s.K3sContainer;
 public interface K3sContainerCustomizer {
 
     /**
-     * Callback function that is called when the customizer is added to the container
-     * @param customizers The customizers container
+     * Callback function that is called when the customizer is added to the customizers collection
+     * @param customizers The customizers collection
      */
     default void onRegister(K3sContainerCustomizers customizers) {
 
@@ -17,7 +17,7 @@ public interface K3sContainerCustomizer {
 
     /**
      * Callback function that is called when the customizer is reconfigured
-     * @param customizers The customizers container
+     * @param customizers The customizers collection
      */
     default void onConfigure(K3sContainerCustomizers customizers) {
 

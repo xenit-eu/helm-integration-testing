@@ -4,30 +4,30 @@ import java.util.Arrays;
 import java.util.function.UnaryOperator;
 
 /**
- * Container for {@link K3sContainerCustomizer}s
+ * A collection of {@link K3sContainerCustomizer}s
  */
 public interface K3sContainerCustomizers {
 
     /**
-     * Registers customizers to the container
+     * Registers customizers to this collection
      * Every class of customizer can only be registered once. Registering the same class of customizer multiple times is an error
      *
-     * @param customizers The customizers to add to the container
+     * @param customizers The customizers to add to the collection
      */
     default K3sContainerCustomizers customize(K3sContainerCustomizer ...customizers) {
         return customize(Arrays.asList(customizers));
     }
 
     /**
-     * Registers customizers to the container
+     * Registers customizers to this collection
      * Every class of customizer can only be registered once. Registering the same class of customizer multiple times is an error
      *
-     * @param customizers The customizers to add to the container
+     * @param customizers The customizers to add to the collection
      */
     K3sContainerCustomizers customize(Iterable<? extends K3sContainerCustomizer> customizers);
 
     /**
-     * Configures a customizer in the container.
+     * Configures a customizer in this collection
      * If the customizer of that type does not exist yet, it is created
      *
      * @param customizerClass The class of the customizer to configure (and create)
