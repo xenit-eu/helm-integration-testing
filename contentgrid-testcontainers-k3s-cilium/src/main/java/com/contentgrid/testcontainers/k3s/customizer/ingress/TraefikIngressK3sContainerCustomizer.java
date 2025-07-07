@@ -6,9 +6,13 @@ import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizers;
 import com.contentgrid.testcontainers.k3s.customizer.WaitStrategyCustomizer;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports.Binding;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
+import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 import org.testcontainers.k3s.K3sContainer;
 
 /**
@@ -21,8 +25,11 @@ public class TraefikIngressK3sContainerCustomizer implements K3sContainerCustomi
     public void onRegister(K3sContainerCustomizers customizers) {
         customizers.configure(WaitStrategyCustomizer.class, wait -> wait.withAdditionalWaitStrategy(
                 getClass(),
-                Wait.forLogMessage(".*\"Observed pod startup duration\" pod=\"kube-system/traefik-.*", 1))
-        );
+                Wait.forHttp("/")
+                        .forPort(32080)
+                        .forStatusCodeMatching((code) -> true)
+                        .withStartupTimeout(Duration.ofMinutes(2))
+        ));
     }
 
     @Override
