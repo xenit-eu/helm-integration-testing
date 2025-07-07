@@ -19,13 +19,19 @@ dependencies {
     implementation platform("org.springframework.boot:spring-boot-dependencies:3.5.3")
 
     api 'org.testcontainers:k3s'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
 
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.assertj:assertj-core'
     testImplementation 'io.fabric8:kubernetes-junit-jupiter:7.3.1'
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:k3s'
+    testImplementation project(':contentgrid-junit-jupiter-k8s')
+    testImplementation 'org.awaitility:awaitility'
+    testImplementation 'org.apache.httpcomponents.client5:httpclient5'
 
+    testRuntimeOnly 'ch.qos.logback:logback-classic'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
