@@ -4,5 +4,5 @@ name: external-secrets-operator
 description: "Installs external-secrets-operator, including the necessary network policies when required"
 dependencies:
   - name: external-secrets
-    version: 0.16.2
+    version: 0.20.1
     repository: "https://charts.external-secrets.io/"
