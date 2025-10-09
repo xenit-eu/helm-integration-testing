@@ -7,12 +7,12 @@ spec:
     spec:
       restartPolicy: Never
       containers:
-        - image: bitnami/os-shell
+        - image: ghcr.io/xenit-eu/kubectl:latest
           name: hello
           command:
             - /bin/echo
             - Hello from this job
-        - image: bitnami/os-shell
+        - image: ghcr.io/xenit-eu/kubectl:latest
           name: goodbye
           command:
             - /bin/echo
