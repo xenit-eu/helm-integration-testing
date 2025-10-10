@@ -64,7 +64,7 @@ public class ExternalSecretsExtensionTest {
 
         static String externalSecret =
                     """
-                    apiVersion: external-secrets.io/v1beta1
+                    apiVersion: external-secrets.io/v1
                     kind: ExternalSecret
                     metadata:
                       name: ${name}
@@ -113,7 +113,7 @@ public class ExternalSecretsExtensionTest {
             ));
 
             var template = """
-                    apiVersion: external-secrets.io/v1beta1
+                    apiVersion: external-secrets.io/v1
                     kind: ExternalSecret
                     metadata:
                       name: versioned-secret
