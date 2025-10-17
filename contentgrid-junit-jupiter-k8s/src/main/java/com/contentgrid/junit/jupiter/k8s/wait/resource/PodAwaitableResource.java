@@ -50,7 +50,7 @@ public class PodAwaitableResource extends AbstractAwaitableResource<Pod> {
                     .getLogReader()
             );
         } catch(KubernetesClientException exception) {
-            log.warn("Failed to read logs from {} container {}", this, containerName, exception);
+            logReadException(containerName, exception);
         }
 
         try {
@@ -62,9 +62,17 @@ public class PodAwaitableResource extends AbstractAwaitableResource<Pod> {
                             .getLogReader()
             );
         } catch(KubernetesClientException exception) {
-            log.warn("Failed to read logs from {} container {}", this, containerName, exception);
+            logReadException(containerName, exception);
         }
         return logReaders.stream().flatMap(logReader -> readLogs(containerName, logReader));
+    }
+
+    private void logReadException(String containerName, KubernetesClientException exception) {
+        if(log.isTraceEnabled()) {
+            log.warn("Failed to read logs from {} container {}", this, containerName, exception);
+        } else {
+            log.warn("Failed to read logs from {} container {}: {}", this, containerName, exception.getStatus().getMessage());
+        }
     }
 
     private Stream<LogLine> readLogs(String containerName, Reader logReader) {
