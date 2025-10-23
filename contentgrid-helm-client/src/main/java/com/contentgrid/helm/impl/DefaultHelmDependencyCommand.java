@@ -23,9 +23,15 @@ class DefaultHelmDependencyCommand implements HelmDependencyCommand {
     public List<HelmDependency> list(String chart) {
         return Arrays.stream(this.executor.call(CMD_DEPENDENCY, "list", chart).split(System.lineSeparator()))
                 .skip(1) // skip header
-                .filter(Objects::nonNull)
-                .map(line -> line.split("\\s+"))
-                .filter(parts -> parts.length == 4)
+                .map(line -> {
+                    String[] parts = line.split("\\s+", 4);
+                    if (parts.length == 4) {
+                        parts[3] = parts[3].trim(); // Trim the last part
+                    } else {
+                        throw new IllegalStateException("Unexpected dependency list line: " + line);
+                    }
+                    return parts;
+                })
                 .map(parts -> createHelmDependency(parts[0], parts[1], parts[2], parts[3]))
                 .toList();
     }
