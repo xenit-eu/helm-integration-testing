@@ -64,7 +64,7 @@ class HelmIntegrationTest {
     @Test
     void installOCIWithGeneratedName() {
         var result = helm.install()
-                .chart("oci://registry-1.docker.io/bitnamicharts/nginx:20.0.5");
+                .chart("oci://registry-1.docker.io/bitnamicharts/nginx:22.3.9");
 
 
         helm.uninstall().uninstall(result.name());
