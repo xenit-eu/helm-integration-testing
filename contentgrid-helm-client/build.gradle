@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    implementation platform("org.springframework.boot:spring-boot-dependencies:3.5.8")
+    implementation platform("org.springframework.boot:spring-boot-dependencies:3.5.9")
     implementation platform("io.fabric8:kubernetes-client-bom:7.4.0")
 
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
