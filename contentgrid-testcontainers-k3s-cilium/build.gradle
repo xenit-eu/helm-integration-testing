@@ -18,7 +18,7 @@ repositories {
 dependencies {
     implementation platform("org.springframework.boot:spring-boot-dependencies:3.5.9")
 
-    api 'org.springframework.boot:spring-boot-testcontainers'
+    api 'org.testcontainers:testcontainers'
     api 'org.testcontainers:k3s'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
