@@ -2,7 +2,8 @@ package com.contentgrid.junit.jupiter.k8s.wait;
 
 import com.contentgrid.helm.HelmInstallCommand.InstallResult;
 import com.contentgrid.junit.jupiter.k8s.resource.AwaitableResource;
-import com.contentgrid.junit.jupiter.k8s.resource.ResourceSet;
+import com.contentgrid.junit.jupiter.k8s.resource.ConfigurableResourceSet;
+import com.contentgrid.junit.jupiter.k8s.resource.ResourceMatchingSpec;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Pod;
@@ -42,8 +43,8 @@ import org.hamcrest.Matchers;
  * Utility to wait for kubernetes resources to become ready
  */
 @Slf4j
-public class KubernetesResourceWaiter implements AutoCloseable {
-    private final ResourceSet resourceSet;
+public class KubernetesResourceWaiter implements AutoCloseable, ResourceMatchingSpec<KubernetesResourceWaiter> {
+    private final ConfigurableResourceSet resourceSet;
     private final KubernetesClient client;
 
     private final Set<Class<? extends HasMetadata>> SUPPORTED_RESOURCES = Set.of(
@@ -57,7 +58,7 @@ public class KubernetesResourceWaiter implements AutoCloseable {
 
     public KubernetesResourceWaiter(@NonNull KubernetesClient client) {
         this.client = client;
-        resourceSet = new ResourceSet(client);
+        resourceSet = ConfigurableResourceSet.of(client);
     }
 
     /**
