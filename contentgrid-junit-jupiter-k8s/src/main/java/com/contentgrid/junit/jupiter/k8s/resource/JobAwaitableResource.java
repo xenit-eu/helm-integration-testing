@@ -1,17 +1,17 @@
-package com.contentgrid.junit.jupiter.k8s.wait.resource;
+package com.contentgrid.junit.jupiter.k8s.resource;
 
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.kubernetes.api.model.apps.DaemonSet;
+import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.Listable;
 import java.util.Objects;
 import lombok.NonNull;
 
-public class DaemonSetAwaitableResource extends AbstractAwaitableResourceWithChildren<DaemonSet, Pod> {
+class JobAwaitableResource extends AbstractAwaitableResourceWithChildren<Job, Pod> {
 
-    public DaemonSetAwaitableResource(@NonNull KubernetesClient client,
-            @NonNull AwaitableResourceFactory factory, DaemonSet item) {
+    public JobAwaitableResource(@NonNull KubernetesClient client,
+            @NonNull AwaitableResourceFactory factory, Job item) {
         super(client, factory, item);
     }
 
@@ -24,6 +24,8 @@ public class DaemonSetAwaitableResource extends AbstractAwaitableResourceWithChi
 
     @Override
     public boolean isReady() {
-        return Objects.equals(item.getStatus().getNumberReady(), item.getStatus().getDesiredNumberScheduled());
+        return item.getStatus().getConditions()
+                .stream()
+                .anyMatch(completion -> Objects.equals(completion.getType(), "Complete") && Objects.equals(completion.getStatus(), "True"));
     }
 }

@@ -1,18 +1,17 @@
-package com.contentgrid.junit.jupiter.k8s.wait;
+package com.contentgrid.junit.jupiter.k8s.resource;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Predicate;
 import lombok.NonNull;
 
 /**
  * Matchers for resources
- * @deprecated Use {@link com.contentgrid.junit.jupiter.k8s.resource.ResourceMatcher} instead
  * @param <T> The type of the resource
  */
-@Deprecated(forRemoval = true, since = "0.1.4")
-public interface ResourceMatcher<T extends HasMetadata> extends Predicate<T>,
-        com.contentgrid.junit.jupiter.k8s.resource.ResourceMatcher<T> {
+public interface ResourceMatcher<T extends HasMetadata> extends Predicate<T> {
 
     /**
      * Match a resource based on its labels
@@ -20,7 +19,8 @@ public interface ResourceMatcher<T extends HasMetadata> extends Predicate<T>,
      * @param <T> The type of the resource
      */
     static <T extends HasMetadata> ResourceMatcher<T> labelled(@NonNull Map<String, String> labels) {
-        return com.contentgrid.junit.jupiter.k8s.resource.ResourceMatcher.labelled(labels)::test;
+        return o -> labels.entrySet().stream()
+                .allMatch(entry -> Objects.equals(o.getMetadata().getLabels().get(entry.getKey()), entry.getValue()));
     }
 
     /**
@@ -29,7 +29,8 @@ public interface ResourceMatcher<T extends HasMetadata> extends Predicate<T>,
      * @param <T> The type of the resource
      */
     static <T extends HasMetadata> ResourceMatcher<T> annotated(@NonNull Map<String, String> annotations) {
-        return com.contentgrid.junit.jupiter.k8s.resource.ResourceMatcher.annotated(annotations)::test;
+        return o -> annotations.entrySet().stream()
+                .allMatch(entry -> Objects.equals(o.getMetadata().getAnnotations().get(entry.getKey()), entry.getValue()));
     }
 
     /**
@@ -38,15 +39,19 @@ public interface ResourceMatcher<T extends HasMetadata> extends Predicate<T>,
      * @param <T> The type of the resource
      */
     static <T extends HasMetadata> ResourceMatcher<T> named(@NonNull String... names) {
-        return com.contentgrid.junit.jupiter.k8s.resource.ResourceMatcher.named(names)::test;
+        var nameSet = Set.of(names);
+        return o -> nameSet.contains(o.getMetadata().getName());
     }
 
     /**
      * Apply the matcher inside a specific namespace
      * @param namespace The namespace where the matcher must be applied to
      */
-    @SuppressWarnings("removal")
     default ResourceMatcher<T> inNamespace(@NonNull String namespace) {
         return new NamespacedResourceMatcherImpl<>(this, namespace);
+    }
+
+    interface NamespacedResourceMatcher<T extends HasMetadata> extends ResourceMatcher<T> {
+        String getNamespace();
     }
 }

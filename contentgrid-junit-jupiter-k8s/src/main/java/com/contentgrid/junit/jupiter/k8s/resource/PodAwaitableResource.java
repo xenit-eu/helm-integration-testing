@@ -1,4 +1,4 @@
-package com.contentgrid.junit.jupiter.k8s.wait.resource;
+package com.contentgrid.junit.jupiter.k8s.resource;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.Pod;
@@ -17,7 +17,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class PodAwaitableResource extends AbstractAwaitableResource<Pod> {
+class PodAwaitableResource extends AbstractAwaitableResource<Pod> {
 
     public PodAwaitableResource(@NonNull KubernetesClient client,
             @NonNull AwaitableResourceFactory factory, Pod item) {
@@ -35,7 +35,7 @@ public class PodAwaitableResource extends AbstractAwaitableResource<Pod> {
                 .flatMap(containerName -> readContainer(resource, containerName));
     }
 
-    private Stream<? extends LogLine> readContainer(PodResource resource, String containerName) {
+    private Stream<LogLine> readContainer(PodResource resource, String containerName) {
         Deque<Reader> logReaders = new LinkedList<>();
 
         // The order here is important: first try to grab the logs of the currently running container

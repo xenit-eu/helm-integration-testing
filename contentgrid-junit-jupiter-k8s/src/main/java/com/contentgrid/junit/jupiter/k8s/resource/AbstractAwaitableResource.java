@@ -1,6 +1,6 @@
-package com.contentgrid.junit.jupiter.k8s.wait.resource;
+package com.contentgrid.junit.jupiter.k8s.resource;
 
-import com.contentgrid.junit.jupiter.k8s.wait.resource.AwaitableResource.Event.RepeatCount;
+import com.contentgrid.junit.jupiter.k8s.resource.AwaitableResource.Event.RepeatCount;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectReference;
 import io.fabric8.kubernetes.api.model.ObjectReferenceBuilder;

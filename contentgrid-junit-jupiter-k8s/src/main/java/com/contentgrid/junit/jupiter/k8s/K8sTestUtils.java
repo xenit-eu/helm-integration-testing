@@ -3,7 +3,7 @@ package com.contentgrid.junit.jupiter.k8s;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.contentgrid.junit.jupiter.k8s.wait.KubernetesResourceWaiter;
-import com.contentgrid.junit.jupiter.k8s.wait.ResourceMatcher;
+import com.contentgrid.junit.jupiter.k8s.resource.ResourceMatcher;
 import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.util.List;
