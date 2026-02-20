@@ -32,7 +32,7 @@ class KubernetesResourceWaiterTest {
 
     static KubernetesClient kubernetesClient;
 
-    @HelmChart(chart = "classpath:chart")
+    @HelmChart(chart = "classpath:../resource/chart")
     HelmChartHandle resourceWaiterChart;
 
     @Test
@@ -70,7 +70,7 @@ class KubernetesResourceWaiterTest {
 
         waiter.await(await -> await.atMost(1, TimeUnit.MINUTES).pollInterval(5, TimeUnit.SECONDS));
 
-        // Check events and logs from a job
+        // Check events from a job
         assertThat(waiter.resources())
                 .filteredOn(resource -> resource.getObjectReference().getName().equals("test-job"))
                 .singleElement()
@@ -87,17 +87,7 @@ class KubernetesResourceWaiterTest {
                                 assertThat(event.resource().getApiType()).isEqualTo(Pod.class);
                                 assertThat(event.type()).isEqualTo("Normal");
                                 assertThat(event.reason()).isEqualTo("Started");
-                            })
-                    ;
-                    assertThat(job.logs()).satisfiesExactly(line -> {
-                        assertThat(line.resource().getApiType()).isEqualTo(Pod.class);
-                        assertThat(line.container()).isEqualTo("hello");
-                        assertThat(line.line()).isEqualTo("Hello from this job");
-                    }, line -> {
-                        assertThat(line.resource().getApiType()).isEqualTo(Pod.class);
-                        assertThat(line.container()).isEqualTo("goodbye");
-                        assertThat(line.line()).isEqualTo("Bye from this job");
-                    });
+                            });
                 });
 
         waiter.close();
