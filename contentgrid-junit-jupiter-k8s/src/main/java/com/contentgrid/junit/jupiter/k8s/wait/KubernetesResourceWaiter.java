@@ -4,31 +4,20 @@ import com.contentgrid.helm.HelmInstallCommand.InstallResult;
 import com.contentgrid.junit.jupiter.k8s.resource.AwaitableResource;
 import com.contentgrid.junit.jupiter.k8s.resource.ConfigurableResourceSet;
 import com.contentgrid.junit.jupiter.k8s.resource.ResourceMatchingSpec;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fabric8.kubernetes.api.model.HasMetadata;
-import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.apps.DaemonSet;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
-import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.Base64;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
-import java.util.zip.GZIPInputStream;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Base64InputStream;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionEvaluationListener;
 import org.awaitility.core.ConditionEvaluationLogger;
@@ -46,15 +35,6 @@ import org.hamcrest.Matchers;
 public class KubernetesResourceWaiter implements AutoCloseable, ResourceMatchingSpec<KubernetesResourceWaiter> {
     private final ConfigurableResourceSet resourceSet;
     private final KubernetesClient client;
-
-    private final Set<Class<? extends HasMetadata>> SUPPORTED_RESOURCES = Set.of(
-            Deployment.class,
-            ReplicaSet.class,
-            Pod.class,
-            Job.class,
-            StatefulSet.class,
-            DaemonSet.class
-    );
 
     public KubernetesResourceWaiter(@NonNull KubernetesClient client) {
         this.client = client;
@@ -97,38 +77,8 @@ public class KubernetesResourceWaiter implements AutoCloseable, ResourceMatching
      * Include all supported resources from a helm install to the wait
      * @param installResult The helm install result
      */
-    @SneakyThrows(IOException.class)
     public KubernetesResourceWaiter include(InstallResult installResult) {
-        var releaseRawData = client.secrets().inNamespace(installResult.namespace())
-                .withName("sh.helm.release.v1."+installResult.name()+".v"+installResult.version())
-                .require()
-                .getData()
-                .get("release");
-
-        // A helm release manifest is a base64-encoded gzip blob.
-        // We need to base64 decode once more to undo the base64 encoding of k8s secrets
-        var releaseJsonData = new GZIPInputStream(new Base64InputStream(
-                new ByteArrayInputStream(Base64.getDecoder().decode(releaseRawData))
-        ));
-
-        var releaseJson = new ObjectMapper().readTree(releaseJsonData);
-
-        String yamlManifest = releaseJson.path("manifest").asText();
-
-        List<? extends HasMetadata> resources = client.getKubernetesSerialization().unmarshal(yamlManifest);
-
-        for (var resource : resources) {
-            if(SUPPORTED_RESOURCES.contains(resource.getClass())) {
-                include(
-                        resource.getClass(),
-                        com.contentgrid.junit.jupiter.k8s.resource.ResourceMatcher.named(resource.getMetadata().getName())
-                                // The default namespace that objects without a namespace get installed into
-                                // is the namespace that the helm chart is installed in
-                                .inNamespace(
-                                        Objects.requireNonNullElse(resource.getMetadata().getNamespace(), installResult.namespace()))
-                );
-            }
-        }
+        resourceSet.include(installResult);
 
         return this;
     }

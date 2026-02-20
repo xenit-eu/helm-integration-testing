@@ -1,5 +1,6 @@
 package com.contentgrid.junit.jupiter.k8s.log;
 
+import com.contentgrid.helm.HelmInstallCommand;
 import com.contentgrid.junit.jupiter.k8s.resource.AwaitableResource;
 import com.contentgrid.junit.jupiter.k8s.resource.AwaitableResource.LogLine;
 import com.contentgrid.junit.jupiter.k8s.resource.ConfigurableResourceSet;
@@ -27,6 +28,12 @@ public class KubernetesResourceLogger implements ResourceMatchingSpec<Kubernetes
     public <T extends HasMetadata> KubernetesResourceLogger include(@NonNull Class<T> clazz,
             @NonNull ResourceMatcher<? super T> matcher) {
         resourceSet.include(clazz, matcher);
+        return this;
+    }
+
+    @Override
+    public KubernetesResourceLogger include(@NonNull HelmInstallCommand.InstallResult installResult) {
+        resourceSet.include(installResult);
         return this;
     }
 

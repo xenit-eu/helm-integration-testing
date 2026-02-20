@@ -1,5 +1,7 @@
 package com.contentgrid.junit.jupiter.k8s.resource;
 
+import com.contentgrid.helm.HelmInstallCommand.InstallResult;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.api.model.Pod;
@@ -11,14 +13,22 @@ import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import org.apache.commons.codec.binary.Base64InputStream;
 
 /**
  * A set of kubernetes resources, based on {@link ResourceMatcher}.
@@ -70,6 +80,43 @@ class ConfigurableResourceSetImpl implements ConfigurableResourceSet {
             @NonNull ResourceMatcher<? super T> matcher
     ) {
         matchableResource(clazz).addMatcher(makeNamespacedResourceMatcher(matcher));
+        return this;
+    }
+
+    @SneakyThrows(IOException.class)
+    @Override
+    public ConfigurableResourceSet include(@NonNull InstallResult installResult) {
+        var releaseRawData = client.secrets().inNamespace(installResult.namespace())
+                .withName("sh.helm.release.v1."+installResult.name()+".v"+installResult.version())
+                .require()
+                .getData()
+                .get("release");
+
+        // A helm release manifest is a base64-encoded gzip blob.
+        // We need to base64 decode once more to undo the base64 encoding of k8s secrets
+        var releaseJsonData = new GZIPInputStream(new Base64InputStream(
+                new ByteArrayInputStream(Base64.getDecoder().decode(releaseRawData))
+        ));
+
+        var releaseJson = new ObjectMapper().readTree(releaseJsonData);
+
+        String yamlManifest = releaseJson.path("manifest").asText();
+
+        List<? extends HasMetadata> resources = client.getKubernetesSerialization().unmarshal(yamlManifest);
+
+        for (var resource : resources) {
+            if(RESOURCE_ACCESSORS.containsKey(resource.getClass())) {
+                include(
+                        resource.getClass(),
+                        com.contentgrid.junit.jupiter.k8s.resource.ResourceMatcher.named(resource.getMetadata().getName())
+                                // The default namespace that objects without a namespace get installed into
+                                // is the namespace that the helm chart is installed in
+                                .inNamespace(
+                                        Objects.requireNonNullElse(resource.getMetadata().getNamespace(), installResult.namespace()))
+                );
+            }
+        }
+
         return this;
     }
 
