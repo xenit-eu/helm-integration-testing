@@ -10,9 +10,14 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import java.time.Instant;
 import java.util.stream.Stream;
 import lombok.NonNull;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
+@Accessors(fluent = true, chain = true)
 public class KubernetesResourceLogger implements ResourceMatchingSpec<KubernetesResourceLogger>, AutoCloseable {
     private final ConfigurableResourceSet resourceSet;
+    @Setter
+    private Instant logsSince = Instant.EPOCH;
 
     public KubernetesResourceLogger(KubernetesClient client) {
         this.resourceSet = ConfigurableResourceSet.of(client);
@@ -32,11 +37,10 @@ public class KubernetesResourceLogger implements ResourceMatchingSpec<Kubernetes
         return this;
     }
 
-
-    public Stream<LogLine> logsSince(@NonNull Instant since) {
+    public Stream<LogLine> logs() {
         return resourceSet.stream()
                 .flatMap(AwaitableResource::logs)
-                .filter(logLine -> since.isAfter(logLine.timestamp()));
+                .filter(logLine -> logsSince.isAfter(logLine.timestamp()));
     }
 
     @Override
