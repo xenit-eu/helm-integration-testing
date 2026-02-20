@@ -15,6 +15,6 @@ spec:
         - image: ghcr.io/xenit-eu/kubectl:latest
           name: goodbye
           command:
-            - /bin/echo
-            - Bye from this job
-
+            - /bin/sh
+            - -c
+            - "printf 'Hi\rBuh\rBuh Bye\n'"

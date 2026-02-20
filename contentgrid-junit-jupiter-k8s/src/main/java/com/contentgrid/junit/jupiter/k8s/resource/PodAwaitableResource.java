@@ -133,15 +133,17 @@ class PodAwaitableResource extends AbstractAwaitableResource<Pod> {
             var firstSpace = line.indexOf(' ');
             Instant timestamp = fallbackTimestamp;
             String logLine = line;
-            try {
-                timestamp = Instant.parse(line.substring(0, firstSpace));
-                logLine = line.substring(firstSpace + 1);
-            } catch(DateTimeParseException ex) {
-                // Timestamp can not be parsed, leave as the fallback and have the full line as logline
-                // In some cases, a log line doesn't have a timestamp.
-                // That appears to happen when a line is 'rewritten', typically by a CLI tool that thinks it's writing to a TTY.
-                // A rewritten line doesn't have a newline, it only has a carriage return (to reset the cursor to te beginning of the line),
-                // and then writes the same line again.
+            if(firstSpace > 0) {
+                try {
+                    timestamp = Instant.parse(line.substring(0, firstSpace));
+                    logLine = line.substring(firstSpace + 1);
+                } catch (DateTimeParseException ex) {
+                    // Timestamp can not be parsed, leave as the fallback and have the full line as logline
+                    // In some cases, a log line doesn't have a timestamp.
+                    // That appears to happen when a line is 'rewritten', typically by a CLI tool that thinks it's writing to a TTY.
+                    // A rewritten line doesn't have a newline, it only has a carriage return (to reset the cursor to te beginning of the line),
+                    // and then writes the same line again.
+                }
             }
             return new LogLine(
                     PodAwaitableResource.this,
