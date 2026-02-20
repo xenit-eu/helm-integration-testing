@@ -7,13 +7,21 @@ import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.PodResource;
 import io.fabric8.kubernetes.client.readiness.Readiness;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.Reader;
+import java.io.UncheckedIOException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Deque;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.NoSuchElementException;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -76,25 +84,13 @@ class PodAwaitableResource extends AbstractAwaitableResource<Pod> {
     }
 
     private Stream<LogLine> readLogs(String containerName, Reader logReader) {
-        return new BufferedReader(logReader).lines()
-                .map(line -> createLogLine(line, containerName));
-    }
-
-    private LogLine createLogLine(String line, String container) {
-        var firstSpace = line.indexOf(' ');
-        Instant timestamp = null;
-        String logLine = line;
-        try {
-            timestamp = Instant.parse(line.substring(0, firstSpace));
-            logLine = line.substring(firstSpace + 1);
-        } catch(DateTimeParseException ex) {
-            // Timestamp can not be parsed, leave as null and have the full line as logline
-        }
-        return new LogLine(
-                this,
-                timestamp,
-                container,
-                logLine
+        var reader = new BufferedReader(logReader);
+        return StreamSupport.stream(
+                Spliterators.spliteratorUnknownSize(
+                        new LogReaderIterator(reader, containerName),
+                        Spliterator.ORDERED|Spliterator.NONNULL
+                ),
+                false
         );
     }
 
@@ -102,5 +98,68 @@ class PodAwaitableResource extends AbstractAwaitableResource<Pod> {
     @Override
     public boolean isReady() {
         return Readiness.isPodReady(item);
+    }
+
+    @RequiredArgsConstructor
+    private class LogReaderIterator implements Iterator<LogLine> {
+
+        @NonNull
+        private final BufferedReader reader;
+        @NonNull
+        private final String containerName;
+        private LogLine nextLine = null;
+        private Instant prevTimestamp = Instant.EPOCH;
+
+        @Override
+        public boolean hasNext() {
+            if(nextLine != null) {
+                return true;
+            } else {
+                try {
+                    var read = reader.readLine();
+                    if (read == null) {
+                        return false;
+                    }
+                    nextLine = createLogLine(read, containerName, prevTimestamp);
+                    prevTimestamp = nextLine.timestamp();
+                    return true;
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }
+        }
+
+        private LogLine createLogLine(String line, String container, Instant fallbackTimestamp) {
+            var firstSpace = line.indexOf(' ');
+            Instant timestamp = fallbackTimestamp;
+            String logLine = line;
+            try {
+                timestamp = Instant.parse(line.substring(0, firstSpace));
+                logLine = line.substring(firstSpace + 1);
+            } catch(DateTimeParseException ex) {
+                // Timestamp can not be parsed, leave as the fallback and have the full line as logline
+                // In some cases, a log line doesn't have a timestamp.
+                // That appears to happen when a line is 'rewritten', typically by a CLI tool that thinks it's writing to a TTY.
+                // A rewritten line doesn't have a newline, it only has a carriage return (to reset the cursor to te beginning of the line),
+                // and then writes the same line again.
+            }
+            return new LogLine(
+                    PodAwaitableResource.this,
+                    timestamp,
+                    container,
+                    logLine
+            );
+        }
+
+        @Override
+        public LogLine next() {
+            if(nextLine != null || hasNext()) {
+                var line = nextLine;
+                nextLine = null;
+                return line;
+            } else {
+                throw new NoSuchElementException();
+            }
+        }
     }
 }
