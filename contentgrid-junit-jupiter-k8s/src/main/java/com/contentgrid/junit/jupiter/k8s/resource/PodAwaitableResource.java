@@ -26,7 +26,7 @@ class PodAwaitableResource extends AbstractAwaitableResource<Pod> {
 
     @Override
     public Stream<LogLine> logs() {
-        var resource = client.pods().resource(item);
+        var resource = client.pods().inNamespace(item.getMetadata().getNamespace()).resource(item);
         var containers = item.getSpec().getContainers()
                 .stream()
                 .map(Container::getName)
