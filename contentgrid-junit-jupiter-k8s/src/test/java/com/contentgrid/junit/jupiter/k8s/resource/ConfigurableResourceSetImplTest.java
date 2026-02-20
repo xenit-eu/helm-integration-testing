@@ -3,6 +3,7 @@ package com.contentgrid.junit.jupiter.k8s.resource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.contentgrid.helm.HelmInstallCommand.InstallOption;
+import com.contentgrid.junit.jupiter.docker.registry.DockerRegistryCache;
 import com.contentgrid.junit.jupiter.helm.HelmChart;
 import com.contentgrid.junit.jupiter.helm.HelmChartHandle;
 import com.contentgrid.junit.jupiter.helm.HelmClient;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 
 @KubernetesTestCluster
 @HelmClient
+@DockerRegistryCache(name = "docker.io", proxy = "https://registry-1.docker.io")
 class ConfigurableResourceSetImplTest {
 
     static KubernetesClient kubernetesClient;

@@ -8,6 +8,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import com.contentgrid.helm.HelmInstallCommand.InstallOption;
+import com.contentgrid.junit.jupiter.docker.registry.DockerRegistryCache;
 import com.contentgrid.junit.jupiter.helm.HelmChart;
 import com.contentgrid.junit.jupiter.helm.HelmChartHandle;
 import com.contentgrid.junit.jupiter.helm.HelmClient;
@@ -28,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 @KubernetesTestCluster
 @HelmClient
+@DockerRegistryCache(name = "docker.io", proxy = "https://registry-1.docker.io")
 class KubernetesResourceWaiterTest {
 
     static KubernetesClient kubernetesClient;

@@ -2,6 +2,7 @@ package com.contentgrid.junit.jupiter.k8s;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.contentgrid.junit.jupiter.docker.registry.DockerRegistryCache;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
@@ -12,6 +13,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 @KubernetesTestCluster
+@DockerRegistryCache(name = "docker.io", proxy = "https://registry-1.docker.io")
 public class K8sTestUtilsTest {
 
     static KubernetesClient kubernetesClient;
