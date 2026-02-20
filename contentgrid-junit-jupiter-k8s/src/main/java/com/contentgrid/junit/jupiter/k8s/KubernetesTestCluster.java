@@ -1,5 +1,6 @@
 package com.contentgrid.junit.jupiter.k8s;
 
+import com.contentgrid.junit.jupiter.k8s.log.KubernetesLoggerExtension;
 import com.contentgrid.junit.jupiter.k8s.providers.K3sTestcontainersClusterProvider;
 import com.contentgrid.junit.jupiter.k8s.providers.KubernetesClusterProvider;
 import io.fabric8.junit.jupiter.KubernetesExtension;
@@ -31,6 +32,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(KubernetesTestClusterExtension.class)
 @ExtendWith(NamespaceExtension.class)
 @ExtendWith(KubernetesExtension.class)
+@ExtendWith(KubernetesLoggerExtension.class)
 @Inherited
 public @interface KubernetesTestCluster {
 

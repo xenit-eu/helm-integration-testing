@@ -1,4 +1,4 @@
-package com.contentgrid.junit.jupiter.k8s.wait.resource;
+package com.contentgrid.junit.jupiter.k8s.resource;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
@@ -7,7 +7,7 @@ import io.fabric8.kubernetes.client.dsl.Listable;
 import java.util.stream.Stream;
 import lombok.NonNull;
 
-public abstract class AbstractAwaitableResourceWithChildren<T extends HasMetadata, C extends HasMetadata> extends
+abstract class AbstractAwaitableResourceWithChildren<T extends HasMetadata, C extends HasMetadata> extends
         AbstractAwaitableResource<T> {
 
     AbstractAwaitableResourceWithChildren(@NonNull KubernetesClient client,

@@ -1,4 +1,4 @@
-package com.contentgrid.junit.jupiter.k8s.wait;
+package com.contentgrid.junit.jupiter.k8s.resource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

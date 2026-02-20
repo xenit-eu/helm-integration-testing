@@ -1,4 +1,4 @@
-package com.contentgrid.junit.jupiter.k8s.wait;
+package com.contentgrid.junit.jupiter.k8s.resource;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import java.util.Objects;
@@ -7,7 +7,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-class NamespacedResourceMatcher<T extends HasMetadata> implements ResourceMatcher<T> {
+class NamespacedResourceMatcherImpl<T extends HasMetadata> implements ResourceMatcher.NamespacedResourceMatcher<T> {
     @NonNull
     private final ResourceMatcher<T> delegate;
     @Getter
@@ -21,6 +21,6 @@ class NamespacedResourceMatcher<T extends HasMetadata> implements ResourceMatche
 
     @Override
     public ResourceMatcher<T> inNamespace(@NonNull String namespace) {
-        return new NamespacedResourceMatcher<>(delegate, namespace);
+        return new NamespacedResourceMatcherImpl<>(delegate, namespace);
     }
 }

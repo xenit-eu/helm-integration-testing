@@ -1,4 +1,4 @@
-package com.contentgrid.junit.jupiter.k8s.wait;
+package com.contentgrid.junit.jupiter.k8s.resource;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
@@ -31,7 +31,7 @@ class MatchableResource<T extends HasMetadata> implements AutoCloseable {
     /**
      * Register an additional matcher
      */
-    public void addMatcher(NamespacedResourceMatcher<? super T> matcher) {
+    public void addMatcher(ResourceMatcher.NamespacedResourceMatcher<? super T> matcher) {
         matchers.add(matcher);
         informers.computeIfAbsent(matcher.getNamespace(),
                 ns -> resourceAccessor.inNamespace(ns).runnableInformer(0));
@@ -41,6 +41,7 @@ class MatchableResource<T extends HasMetadata> implements AutoCloseable {
      * Add an exclusion
      */
     public void addExclusion(ResourceMatcher<? super T> exclusion) {
+        matchers.remove(exclusion);
         exclusions.add(exclusion);
     }
 

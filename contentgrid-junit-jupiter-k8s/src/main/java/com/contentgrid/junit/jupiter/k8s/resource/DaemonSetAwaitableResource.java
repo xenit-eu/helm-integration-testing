@@ -1,17 +1,17 @@
-package com.contentgrid.junit.jupiter.k8s.wait.resource;
+package com.contentgrid.junit.jupiter.k8s.resource;
 
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.kubernetes.api.model.apps.ReplicaSet;
+import io.fabric8.kubernetes.api.model.apps.DaemonSet;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.Listable;
-import io.fabric8.kubernetes.client.readiness.Readiness;
+import java.util.Objects;
 import lombok.NonNull;
 
-public class ReplicaSetAwaitableResource extends AbstractAwaitableResourceWithChildren<ReplicaSet, Pod> {
+class DaemonSetAwaitableResource extends AbstractAwaitableResourceWithChildren<DaemonSet, Pod> {
 
-    public ReplicaSetAwaitableResource(@NonNull KubernetesClient client,
-            @NonNull AwaitableResourceFactory factory, @NonNull ReplicaSet item) {
+    public DaemonSetAwaitableResource(@NonNull KubernetesClient client,
+            @NonNull AwaitableResourceFactory factory, DaemonSet item) {
         super(client, factory, item);
     }
 
@@ -24,7 +24,6 @@ public class ReplicaSetAwaitableResource extends AbstractAwaitableResourceWithCh
 
     @Override
     public boolean isReady() {
-        return Readiness.isReplicaSetReady(item);
+        return Objects.equals(item.getStatus().getNumberReady(), item.getStatus().getDesiredNumberScheduled());
     }
-
 }

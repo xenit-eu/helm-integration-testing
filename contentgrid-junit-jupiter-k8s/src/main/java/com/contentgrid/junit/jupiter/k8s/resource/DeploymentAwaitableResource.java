@@ -1,4 +1,4 @@
-package com.contentgrid.junit.jupiter.k8s.wait.resource;
+package com.contentgrid.junit.jupiter.k8s.resource;
 
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -8,7 +8,7 @@ import io.fabric8.kubernetes.client.dsl.Listable;
 import io.fabric8.kubernetes.client.readiness.Readiness;
 import lombok.NonNull;
 
-public class DeploymentAwaitableResource extends AbstractAwaitableResourceWithChildren<Deployment, ReplicaSet> {
+class DeploymentAwaitableResource extends AbstractAwaitableResourceWithChildren<Deployment, ReplicaSet> {
 
     public DeploymentAwaitableResource(@NonNull KubernetesClient client, @NonNull AwaitableResourceFactory factory, @NonNull Deployment item) {
         super(client, factory, item);
