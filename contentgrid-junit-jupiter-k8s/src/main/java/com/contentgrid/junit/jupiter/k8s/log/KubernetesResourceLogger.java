@@ -47,7 +47,7 @@ public class KubernetesResourceLogger implements ResourceMatchingSpec<Kubernetes
     public Stream<LogLine> logs() {
         return resourceSet.stream()
                 .flatMap(AwaitableResource::logs)
-                .filter(logLine -> logsSince.isAfter(logLine.timestamp()));
+                .filter(logLine -> logLine.timestamp().isAfter(logsSince));
     }
 
     @Override
