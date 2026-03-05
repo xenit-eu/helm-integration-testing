@@ -3,13 +3,10 @@ package com.contentgrid.junit.jupiter.k8s.log;
 import static com.contentgrid.junit.jupiter.helpers.FieldHelper.findFields;
 import static com.contentgrid.junit.jupiter.helpers.FieldHelper.getFieldValue;
 
-import com.contentgrid.junit.jupiter.helm.HelmChart;
-import com.contentgrid.junit.jupiter.helm.HelmChartHandle;
 import com.contentgrid.junit.jupiter.helpers.FieldHelper;
 import io.fabric8.junit.jupiter.HasKubernetesClient;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.time.Instant;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -54,8 +51,14 @@ public class KubernetesLoggerExtension implements HasKubernetesClient, BeforeAll
     }
 
     private void dumpLogs(ExtensionContext context) throws IllegalAccessException {
-        for (var field : findFields(context, KubernetesResourceLogger.class, f -> true)) {
-            var logger = (KubernetesResourceLogger)getFieldValue(field, context.getRequiredTestInstance());
+        dumpLogs(context, true);
+        dumpLogs(context, false);
+    }
+
+    private void dumpLogs(ExtensionContext context, boolean isStatic) throws IllegalAccessException {
+        for (var field : findTargetFields(context, isStatic)) {
+            Object instance = isStatic ? context.getRequiredTestClass() : context.getRequiredTestInstance();
+            var logger = (KubernetesResourceLogger)getFieldValue(field, instance);
             if(logger != null) {
                 logger.logs()
                         .forEachOrdered(line -> log.info("[{}] {} {} >>> {}", line.resource(), line.timestamp(), line.container(), line.line()));
@@ -73,7 +76,7 @@ public class KubernetesLoggerExtension implements HasKubernetesClient, BeforeAll
     @Override
     public void handleBeforeAllMethodExecutionException(ExtensionContext context, Throwable throwable)
             throws Throwable {
-        dumpLogs(context);
+        dumpLogs(context, true);
         throw throwable;
     }
 
