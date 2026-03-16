@@ -184,6 +184,7 @@ public class HelmChartHandle implements CloseableResource {
             helm.dependency().list(ensureCopiedToTargetDir())
                     .stream()
                     .map(HelmDependency::repository)
+                    .filter(repo -> !Objects.equals(repo.getScheme(), "oci"))
                     // Deduplicate repositories
                     .collect(Collectors.toUnmodifiableSet())
                     .forEach(helm.repository()::add);

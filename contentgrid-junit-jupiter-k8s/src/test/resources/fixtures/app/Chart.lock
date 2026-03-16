@@ -2,5 +2,8 @@ dependencies:
 - name: keycloakx
   repository: https://codecentric.github.io/helm-charts
   version: 2.6.0
-digest: sha256:d92765ab526b7d5ece71ca8eea94a2233ea0932c7b2f135c2915d2486a3c9696
-generated: "2024-11-23T03:34:36.666374447Z"
+- name: nginx
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 20.0.8
+digest: sha256:2f0a0b690edbc1506e680fa9c45a016a5bc86dafa7c632ffe7ee136dd9bc6396
+generated: "2026-03-16T17:22:23.217665048+01:00"
