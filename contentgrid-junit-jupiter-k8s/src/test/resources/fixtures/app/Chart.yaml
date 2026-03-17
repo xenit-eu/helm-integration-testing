@@ -10,3 +10,6 @@ dependencies:
   - name: keycloakx
     repository: https://codecentric.github.io/helm-charts
     version: "2.6.0"
+  - name: nginx
+    repository: oci://registry-1.docker.io/bitnamicharts
+    version: "20.0.8"

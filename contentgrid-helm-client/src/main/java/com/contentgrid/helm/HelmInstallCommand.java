@@ -39,16 +39,6 @@ public interface HelmInstallCommand {
         return this.chart(null, chart, installOptions);
     }
 
-    /**
-     * Install the chart from the current working directory, with --generate-name implied
-     *
-     * @deprecated This confusingly-named function can be replaced by {@code .chart(".")}
-     */
-    @Deprecated(since = "0.0.8", forRemoval = true)
-    default InstallResult cwd() {
-        return this.chart(".");
-    }
-
     interface InstallOption {
 
         /**
