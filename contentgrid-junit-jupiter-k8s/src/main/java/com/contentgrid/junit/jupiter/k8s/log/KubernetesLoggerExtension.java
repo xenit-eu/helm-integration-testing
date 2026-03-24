@@ -62,6 +62,9 @@ public class KubernetesLoggerExtension implements HasKubernetesClient, BeforeAll
             if(logger != null) {
                 logger.logs()
                         .forEachOrdered(line -> log.info("[{}] {} {} >>> {}", line.resource(), line.timestamp(), line.container(), line.line()));
+                logger.events()
+                        .forEachOrdered(event -> log.info("[{}] {} {} >>> [{}] {} (×{} in {}s)",
+                                event.resource(), event.timestamp(), event.type(), event.reason(), event.message(), event.repeat().count(), event.repeat().period().getSeconds()));
             }
         }
     }
