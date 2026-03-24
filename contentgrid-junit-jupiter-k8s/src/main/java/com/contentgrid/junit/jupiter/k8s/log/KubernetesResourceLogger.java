@@ -2,6 +2,7 @@ package com.contentgrid.junit.jupiter.k8s.log;
 
 import com.contentgrid.helm.HelmInstallCommand;
 import com.contentgrid.junit.jupiter.k8s.resource.AwaitableResource;
+import com.contentgrid.junit.jupiter.k8s.resource.AwaitableResource.Event;
 import com.contentgrid.junit.jupiter.k8s.resource.AwaitableResource.LogLine;
 import com.contentgrid.junit.jupiter.k8s.resource.ConfigurableResourceSet;
 import com.contentgrid.junit.jupiter.k8s.resource.ResourceMatcher;
@@ -48,6 +49,12 @@ public class KubernetesResourceLogger implements ResourceMatchingSpec<Kubernetes
         return resourceSet.stream()
                 .flatMap(AwaitableResource::logs)
                 .filter(logLine -> logLine.timestamp().isAfter(logsSince));
+    }
+
+    public Stream<Event> events() {
+        return resourceSet.stream()
+                .flatMap(AwaitableResource::events)
+                .filter(event -> event.timestamp().plus(event.repeat().period()).isAfter(logsSince));
     }
 
     @Override

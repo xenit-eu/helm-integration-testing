@@ -4,6 +4,7 @@ import static com.contentgrid.junit.jupiter.helpers.FieldHelper.findFields;
 import static com.contentgrid.junit.jupiter.helpers.FieldHelper.getFieldValue;
 
 import com.contentgrid.junit.jupiter.helpers.FieldHelper;
+import com.contentgrid.junit.jupiter.k8s.resource.AwaitableResource.Event.RepeatCount;
 import io.fabric8.junit.jupiter.HasKubernetesClient;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -62,8 +63,16 @@ public class KubernetesLoggerExtension implements HasKubernetesClient, BeforeAll
             if(logger != null) {
                 logger.logs()
                         .forEachOrdered(line -> log.info("[{}] {} {} >>> {}", line.resource(), line.timestamp(), line.container(), line.line()));
+                logger.events()
+                        .forEachOrdered(event -> log.info("[{}] {} {} >>> [{}] {}{}",
+                                event.resource(), event.timestamp(), event.type(), event.reason(), event.message(),
+                                event.repeat().count() > 1 ? formatRepeatCount(event.repeat()) : ""));
             }
         }
+    }
+
+    private static String formatRepeatCount(RepeatCount repeat) {
+        return " (×%s in %ss)".formatted(repeat.count(), repeat.period().getSeconds());
     }
 
     @Override
