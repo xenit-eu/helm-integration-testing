@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    implementation platform("org.springframework.boot:spring-boot-dependencies:3.5.13")
+    implementation platform("org.springframework.boot:spring-boot-dependencies:4.0.5")
 
     api 'org.testcontainers:testcontainers'
 
