@@ -12,7 +12,7 @@ tasks.register("testResourcesJar", Jar) {
 }
 
 dependencies {
-    implementation platform("org.springframework.boot:spring-boot-dependencies:3.5.14")
+    implementation platform("org.springframework.boot:spring-boot-dependencies:4.0.6")
     implementation platform("io.fabric8:kubernetes-client-bom:7.7.0")
 
     implementation project(':contentgrid-helm-client')
