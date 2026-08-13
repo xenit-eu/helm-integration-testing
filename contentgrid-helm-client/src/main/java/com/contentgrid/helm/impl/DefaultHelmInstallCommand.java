@@ -56,7 +56,11 @@ class DefaultHelmInstallCommand implements HelmInstallCommand {
 
         var stdout = this.executor.call(CMD_INSTALL, args);
 
-        return this.objectMapper.readValue(stdout, DefaultInstallResult.class);
+        // In case of OCI artifacts, helm likes to insert some additional lines before the JSON response
+        // that say the image was pulled, and what it's digest was.
+        // Drop them here, as we only want to parse the installation result JSON
+        var jsonStart = stdout.indexOf('{');
+        return this.objectMapper.readValue(stdout.substring(jsonStart), DefaultInstallResult.class);
     }
 
 }
