@@ -53,15 +53,13 @@ public class CiliumK3sContainerCustomizer implements K3sContainerCustomizer {
         // https://github.com/rancher-sandbox/rancher-desktop/discussions/1977
         // > the cilium-agent container mounts these using host mounts,
         // > and it requires them to be SHARED mounts for this work.
-        container.withCreateContainerCmdModifier(modifier -> {
-            var hostConfig = Objects.requireNonNull(modifier.getHostConfig());
-            hostConfig.withBinds(Stream.concat(
-                    Arrays.stream(hostConfig.getBinds()),
-                    Stream.of(
-                            createSharedBind("/sys/fs/bpf", new Volume("/sys/fs/bpf")),
-                            createSharedBind("/sys/fs/cgroup", new Volume("/run/cilium/cgroupv2"))
-                    )).toList());
-        });
+        container.withCreateContainerCmdModifier(CustomizerUtils.withBinds(binds -> Stream.concat(
+                binds,
+                Stream.of(
+                        createSharedBind("/sys/fs/bpf", new Volume("/sys/fs/bpf")),
+                        createSharedBind("/sys/fs/cgroup", new Volume("/run/cilium/cgroupv2"))
+                )
+        )));
 
         // Install Cilium with helm-controller
         container.withCopyToContainer(
