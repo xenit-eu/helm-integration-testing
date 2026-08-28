@@ -134,10 +134,10 @@ public class DockerRegistryCacheExtension implements BeforeAllCallback {
 
 
     /**
-     * An adapter for Testcontainers {@link Startable} that implement {@link CloseableResource}, thereby letting the
+     * An adapter for Testcontainers {@link Startable} that implement {@link AutoCloseable}, thereby letting the
      * JUnit automatically stop containers once the current {@link ExtensionContext} is closed.
      */
-    private static class DockerRegistryCacheContainer implements CloseableResource,
+    private static class DockerRegistryCacheContainer implements CloseableResource, AutoCloseable,
             DockerRegistryEndpoint {
 
         @Getter

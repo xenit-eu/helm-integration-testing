@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    implementation platform("org.springframework.boot:spring-boot-dependencies:3.5.16")
+    implementation platform("org.springframework.boot:spring-boot-dependencies:4.1.0")
 
     api 'org.testcontainers:testcontainers'
 
@@ -28,8 +28,8 @@ dependencies {
     testImplementation 'org.springframework:spring-test'
     testImplementation 'org.skyscreamer:jsonassert'
 
-    testImplementation 'org.testcontainers:junit-jupiter'
-    testImplementation 'org.testcontainers:k3s'
+    testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
+    testImplementation 'org.testcontainers:testcontainers-k3s'
 
     testRuntimeOnly 'org.slf4j:slf4j-simple'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
