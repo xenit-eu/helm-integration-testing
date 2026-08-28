@@ -5,6 +5,7 @@ import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Volume;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -133,6 +134,9 @@ public class FakeCpuK3sContainerCustomizer implements K3sContainerCustomizer {
 
         Files.writeString(systemCpuRoot.resolve("online"), "0-"+maxCoreId+"\n");
 
+        deleteTreeOnExit(systemNodeRoot);
+        deleteTreeOnExit(systemCpuRoot);
+
         var systemNodeBind = new Bind(
                 systemNodeRoot.toAbsolutePath().toString(),
                 new Volume(SYSTEM_NODE),
@@ -146,6 +150,18 @@ public class FakeCpuK3sContainerCustomizer implements K3sContainerCustomizer {
         );
 
         container.withCreateContainerCmdModifier(CustomizerUtils.withBinds(binds -> Stream.concat(binds, Stream.of(systemNodeBind, systemCpuBind))));
+    }
+
+    /**
+     * Removes a whole directory tree when the JVM exits.
+     * <p>
+     * {@link java.io.File#deleteOnExit()} can not remove a non-empty directory and deletes in reverse registration
+     * order, so the tree is registered top-down to have the contents deleted before the directories containing them.
+     */
+    private static void deleteTreeOnExit(Path root) throws IOException {
+        try (var tree = Files.walk(root)) {
+            tree.forEach(path -> path.toFile().deleteOnExit());
+        }
     }
 
 }
