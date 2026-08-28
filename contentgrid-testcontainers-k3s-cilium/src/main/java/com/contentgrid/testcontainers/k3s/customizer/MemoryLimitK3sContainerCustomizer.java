@@ -48,7 +48,7 @@ public class MemoryLimitK3sContainerCustomizer implements K3sContainerCustomizer
      * @param value The amount of memory, expressed in {@code sizeUnit}s
      * @param sizeUnit The size unit for the amount of memory
      */
-    public MemoryLimitK3sContainerCustomizer withAvailableMemory(float value, SizeUnit sizeUnit) {
+    public MemoryLimitK3sContainerCustomizer withAvailableMemory(double value, SizeUnit sizeUnit) {
         return withAvailableMemoryBytes(sizeUnit.of(value));
     }
 
@@ -69,7 +69,7 @@ public class MemoryLimitK3sContainerCustomizer implements K3sContainerCustomizer
             this.multiplier = prevUnit.multiplier * 1024L;
         }
 
-        public long of(float value) {
+        public long of(double value) {
             return Math.round(value * multiplier);
         }
 
