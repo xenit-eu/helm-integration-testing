@@ -20,9 +20,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExtensionConfigurationException;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
 import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.junit.jupiter.engine.execution.NamespaceAwareStore;
+import org.junit.platform.engine.support.store.Namespace;
 import org.junit.platform.engine.support.store.NamespacedHierarchicalStore;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
@@ -229,7 +229,7 @@ class KubernetesTestClusterExtensionTest {
         ExtensionContext extensionContext = Mockito.mock(ExtensionContext.class);
         Mockito.when(extensionContext.getRequiredTestClass()).thenReturn(clazz);
         Mockito.when(extensionContext.getStore(any())).thenAnswer(
-                (Answer<Store>) invocation -> new NamespaceAwareStore(valueStore, invocation.getArgument(0)));
+                (Answer<Store>) invocation -> new NamespaceAwareStore(valueStore, Namespace.create(invocation.getArgument(0, ExtensionContext.Namespace.class).getParts())));
 
         return extensionContext;
     }

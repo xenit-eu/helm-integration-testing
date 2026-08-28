@@ -22,7 +22,6 @@ dependencies {
     implementation 'org.slf4j:slf4j-api'
     implementation 'org.junit.jupiter:junit-jupiter-api'
     implementation 'io.fabric8:kubernetes-junit-jupiter'
-    implementation 'org.testcontainers:k3s'
     implementation 'org.awaitility:awaitility'
 
     testImplementation 'org.springframework:spring-webflux'
@@ -30,7 +29,7 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine'
-    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
     testImplementation 'org.assertj:assertj-core'
     testImplementation 'org.mockito:mockito-core'
     testImplementation 'org.skyscreamer:jsonassert'

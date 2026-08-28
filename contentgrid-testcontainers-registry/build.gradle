@@ -28,8 +28,8 @@ dependencies {
     testImplementation 'org.springframework:spring-test'
     testImplementation 'org.skyscreamer:jsonassert'
 
-    testImplementation 'org.testcontainers:junit-jupiter'
-    testImplementation 'org.testcontainers:k3s'
+    testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
+    testImplementation 'org.testcontainers:testcontainers-k3s'
 
     testRuntimeOnly 'org.slf4j:slf4j-simple'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
