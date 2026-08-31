@@ -1,6 +1,7 @@
 package com.contentgrid.testcontainers.k3s.customizer.ingress;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.contentgrid.junit.jupiter.k8s.wait.KubernetesResourceWaiter;
 import com.contentgrid.junit.jupiter.k8s.wait.ResourceMatcher;
@@ -10,6 +11,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.apache.hc.client5.http.DnsResolver;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -128,6 +131,31 @@ class TraefikIngressK3sContainerCustomizerTest extends AbstractK3sContainerCusto
                 .satisfies(response -> {
                     assertThat(response.getCode()).isEqualTo(404);
                 });
+    }
+
+    @Test
+    void mapConversion() {
+        var tree = TraefikIngressK3sContainerCustomizer.convertToTree(Map.of(
+                "x.y", 1,
+                "x.z", 2,
+                "x.x", List.of("abc", "def"),
+                "y", true
+        ));
+
+        assertThat(tree).isEqualTo(Map.of(
+                "x", Map.of(
+                        "y", 1,
+                        "z", 2,
+                        "x", List.of("abc", "def")
+                ),
+                "y", true
+        ));
+
+        assertThatThrownBy(() -> TraefikIngressK3sContainerCustomizer.convertToTree(Map.of(
+                "x.y", true,
+                "x.y.z", 1
+        ))).isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("conflict at x.y");
     }
 
 }
