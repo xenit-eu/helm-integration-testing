@@ -73,13 +73,16 @@ public class KubernetesResourceWaiter implements AutoCloseable, ResourceMatching
         return include(Job.class, matcher);
     }
 
-    /**
-     * Include all supported resources from a helm install to the wait
-     * @param installResult The helm install result
-     */
+    @Override
     public KubernetesResourceWaiter include(InstallResult installResult) {
         resourceSet.include(installResult);
 
+        return this;
+    }
+
+    @Override
+    public KubernetesResourceWaiter include(@NonNull List<HasMetadata> items) {
+        resourceSet.include(items);
         return this;
     }
 

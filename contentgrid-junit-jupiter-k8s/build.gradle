@@ -16,6 +16,7 @@ dependencies {
     implementation platform("io.fabric8:kubernetes-client-bom:7.8.0")
 
     implementation project(':contentgrid-helm-client')
+    compileOnlyApi project(':contentgrid-helm-client') // Required for using KubernetesResourceWaiter#include()
     implementation project(':contentgrid-testcontainers-registry')
     implementation project(':contentgrid-testcontainers-k3s-cilium')
 

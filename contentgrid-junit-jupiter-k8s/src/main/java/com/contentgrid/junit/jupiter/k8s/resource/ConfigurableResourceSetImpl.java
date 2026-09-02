@@ -102,24 +102,33 @@ class ConfigurableResourceSetImpl implements ConfigurableResourceSet {
 
         String yamlManifest = releaseJson.path("manifest").asText();
 
-        List<? extends HasMetadata> resources = client.getKubernetesSerialization().unmarshal(yamlManifest);
+        List<HasMetadata> resources = client.getKubernetesSerialization().unmarshal(yamlManifest);
 
+        // The default namespace that objects without a namespace get installed into
+        // is the namespace that the helm chart is installed in
+        include(resources, installResult.namespace());
+
+        return this;
+    }
+
+    @Override
+    public ConfigurableResourceSet include(@NonNull List<HasMetadata> resources) {
+        include(resources, null);
+        return this;
+    }
+
+    private void include(@NonNull List<HasMetadata> resources, String defaultNamespace) {
         for (var resource : resources) {
             if(RESOURCE_ACCESSORS.containsKey(resource.getClass())) {
                 include(
                         resource.getClass(),
                         com.contentgrid.junit.jupiter.k8s.resource.ResourceMatcher.named(resource.getMetadata().getName())
-                                // The default namespace that objects without a namespace get installed into
-                                // is the namespace that the helm chart is installed in
                                 .inNamespace(
-                                        Objects.requireNonNullElse(resource.getMetadata().getNamespace(), installResult.namespace()))
+                                        Objects.requireNonNullElse(resource.getMetadata().getNamespace(), defaultNamespace))
                 );
             }
         }
-
-        return this;
     }
-
 
     @Override
     public <T extends HasMetadata> ConfigurableResourceSet exclude(
