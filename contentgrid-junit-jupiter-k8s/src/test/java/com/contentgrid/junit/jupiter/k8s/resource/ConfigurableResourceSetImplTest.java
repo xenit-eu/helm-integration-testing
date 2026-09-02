@@ -13,7 +13,13 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 @KubernetesTestCluster
@@ -33,13 +39,63 @@ class ConfigurableResourceSetImplTest {
             var resourceSet = new ConfigurableResourceSetImpl(kubernetesClient)
                     .include(installResult);
 
+        assertThat(resourceSet.stream())
+                .satisfiesExactlyInAnyOrder(
+                        deployment -> {
+                            assertThat(deployment.getApiType()).isEqualTo(Deployment.class);
+                            assertThat(deployment.getObjectReference().getNamespace()).isEqualTo("kube-system");
+                            assertThat(deployment.getObjectReference().getName()).isEqualTo("test-nginx-deploy");
+                        },
+                        deployment -> {
+                            assertThat(deployment.getApiType()).isEqualTo(Deployment.class);
+                            assertThat(deployment.getObjectReference().getNamespace()).isEqualTo(kubernetesClient.getNamespace());
+                            assertThat(deployment.getObjectReference().getName()).isEqualTo("broken-deploy");
+                        },
+                        daemonSet -> {
+                            assertThat(daemonSet.getApiType()).isEqualTo(DaemonSet.class);
+                            assertThat(daemonSet.getObjectReference().getNamespace()).isEqualTo(kubernetesClient.getNamespace());
+                            assertThat(daemonSet.getObjectReference().getName()).isEqualTo("test-nginx-daemonset");
+                        },
+                        statefulSet -> {
+                            assertThat(statefulSet.getApiType()).isEqualTo(StatefulSet.class);
+                            assertThat(statefulSet.getObjectReference().getNamespace()).isEqualTo(kubernetesClient.getNamespace());
+                            assertThat(statefulSet.getObjectReference().getName()).isEqualTo("test-nginx-sts");
+                        },
+                        job -> {
+                            assertThat(job.getApiType()).isEqualTo(Job.class);
+                            assertThat(job.getObjectReference().getNamespace()).isEqualTo(kubernetesClient.getNamespace());
+                            assertThat(job.getObjectReference().getName()).isEqualTo("test-job");
+                        }
+                );
+    }
+
+    @Test
+    void fabric8Resources() {
+
+        var dataSet = Stream.of(
+                "daemonset.yaml",
+                "broken-deployment.yaml",
+                "job.yaml",
+                "statefulset.yaml"
+        ).map(name -> getClass().getResourceAsStream("chart/templates/"+name))
+                .map(is -> {
+                    try (is) {
+                        return new String(is.readAllBytes(), StandardCharsets.UTF_8);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                })
+                .collect(Collectors.joining("\n---\n"))
+                .getBytes(StandardCharsets.UTF_8);
+
+        var appliedResources = kubernetesClient.load(new ByteArrayInputStream(dataSet)).serverSideApply();
+
+        try {
+            var resourceSet = new ConfigurableResourceSetImpl(kubernetesClient);
+            resourceSet.include(appliedResources);
+
             assertThat(resourceSet.stream())
                     .satisfiesExactlyInAnyOrder(
-                            deployment -> {
-                                assertThat(deployment.getApiType()).isEqualTo(Deployment.class);
-                                assertThat(deployment.getObjectReference().getNamespace()).isEqualTo("kube-system");
-                                assertThat(deployment.getObjectReference().getName()).isEqualTo("test-nginx-deploy");
-                            },
                             deployment -> {
                                 assertThat(deployment.getApiType()).isEqualTo(Deployment.class);
                                 assertThat(deployment.getObjectReference().getNamespace()).isEqualTo(kubernetesClient.getNamespace());
@@ -61,6 +117,12 @@ class ConfigurableResourceSetImplTest {
                                 assertThat(job.getObjectReference().getName()).isEqualTo("test-job");
                             }
                     );
+        } finally {
+            // Clean up resources again
+            appliedResources.forEach(resource -> {
+                kubernetesClient.resource(resource).delete();
+            });
+        }
     }
 
     @Test

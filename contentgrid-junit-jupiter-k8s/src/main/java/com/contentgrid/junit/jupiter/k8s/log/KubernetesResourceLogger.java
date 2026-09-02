@@ -10,6 +10,7 @@ import com.contentgrid.junit.jupiter.k8s.resource.ResourceMatchingSpec;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.time.Instant;
+import java.util.List;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import lombok.Setter;
@@ -35,6 +36,12 @@ public class KubernetesResourceLogger implements ResourceMatchingSpec<Kubernetes
     @Override
     public KubernetesResourceLogger include(@NonNull HelmInstallCommand.InstallResult installResult) {
         resourceSet.include(installResult);
+        return this;
+    }
+
+    @Override
+    public KubernetesResourceLogger include(@NonNull List<HasMetadata> items) {
+        resourceSet.include(items);
         return this;
     }
 
