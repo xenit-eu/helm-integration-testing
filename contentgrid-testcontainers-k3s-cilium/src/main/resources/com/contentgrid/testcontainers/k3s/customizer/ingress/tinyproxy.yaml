@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tinyproxy
+  namespace: kube-system
+  labels:
+    helm-integration-testing.contentgrid.com/app: tinyproxy
+spec:
+  selector:
+    matchLabels:
+      helm-integration-testing.contentgrid.com/app: tinyproxy
+  template:
+    metadata:
+      labels:
+        helm-integration-testing.contentgrid.com/app: tinyproxy
+    spec:
+      containers:
+        - name: tinyproxy
+          image: monokal/tinyproxy:latest@sha256:2c1b6f187fe18a993ec6e88cdb12c8f1d28d7416bd73492289aa5f74f687c672
+          args:
+          - ANY
+          ports:
+            - containerPort: 8888
+              name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tinyproxy
+  namespace: kube-system
+  labels:
+    helm-integration-testing.contentgrid.com/app: tinyproxy
+spec:
+  selector:
+    helm-integration-testing.contentgrid.com/app: tinyproxy
+  type: NodePort
+  ports:
+    - nodePort: 30100
+      targetPort: http
+      port: 8888
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: tinyproxy
+  namespace: kube-system
+  labels:
+    helm-integration-testing.contentgrid.com/app: tinyproxy
+spec:
+  podSelector:
+    matchLabels:
+      helm-integration-testing.contentgrid.com/app: tinyproxy
+  egress:
+    - to:
+        # Anything inside the cluster: cilium does not match cluster-internal
+        # endpoints on ipBlock CIDRs, so they need their own selectors
+        - namespaceSelector: {}
+  ingress:
+    - {} # Allow anything to connect to the proxy
