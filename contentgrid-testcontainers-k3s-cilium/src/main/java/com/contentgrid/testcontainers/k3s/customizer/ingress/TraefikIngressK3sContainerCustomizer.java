@@ -30,6 +30,7 @@ import org.testcontainers.k3s.K3sContainer;
  */
 @AllArgsConstructor
 public class TraefikIngressK3sContainerCustomizer implements K3sContainerCustomizer {
+
     private static final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory()
             .disable(Feature.WRITE_DOC_START_MARKER)
             .enable(Feature.INDENT_ARRAYS_WITH_INDICATOR)
@@ -57,9 +58,32 @@ public class TraefikIngressK3sContainerCustomizer implements K3sContainerCustomi
      * @param value The value to use
      */
     public TraefikIngressK3sContainerCustomizer withHelmValue(String key, Object value) {
+        return withAdditionalHelmValues(Map.of(key, value));
+    }
+
+    private TraefikIngressK3sContainerCustomizer withAdditionalHelmValues(Map<String, Object> additionalValues) {
         var copy = new HashMap<>(helmValues);
-        copy.put(key, value);
+        copy.putAll(additionalValues);
         return withHelmValues(Collections.unmodifiableMap(copy));
+    }
+
+    /**
+     * Disables forwarding of <code>Upgrade</code> and <code>Connection</code> headers to upstream services
+     */
+    public TraefikIngressK3sContainerCustomizer withoutUpstreamUpgradeHeader() {
+        return withAdditionalHelmValues(Map.of(
+                "ports.web.middlewares", "no-upgrade-header@file",
+                "providers.file.enabled", true,
+                "providers.file.content", """
+                          http:
+                            middlewares:
+                              no-upgrade-header:
+                                headers:
+                                  customRequestHeaders:
+                                    Upgrade: ""
+                                    Connection: ""
+                        """
+        ));
     }
 
     @Override

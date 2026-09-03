@@ -19,6 +19,7 @@ import java.util.function.UnaryOperator;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.k3s.K3sContainer;
 import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.utility.DockerImageName;
 
@@ -27,13 +28,20 @@ public abstract class AbstractK3sContainerCustomizerTest {
     private final List<Startable> containers = new LinkedList<>();
 
     protected KubernetesClient createContainer(Consumer<K3sContainerCustomizers> configuration) {
+        return createClientFromContainer(createContainerOnly(configuration));
+    }
+
+    protected K3sContainer createContainerOnly(Consumer<K3sContainerCustomizers> configuration) {
         var container = new CustomizableK3sContainer(DockerImageName.parse("rancher/k3s:v1.33.1-k3s1"));
         configuration.accept(container);
         containers.add(container);
         container.withLogConsumer(new Slf4jLogConsumer(log, true));
         container.start();
-        var config = Config.fromKubeconfig(container.getKubeConfigYaml());
+        return container;
+    }
 
+    protected KubernetesClient createClientFromContainer(K3sContainer container) {
+        var config = Config.fromKubeconfig(container.getKubeConfigYaml());
         return new KubernetesClientBuilder().withConfig(config).build();
     }
 
