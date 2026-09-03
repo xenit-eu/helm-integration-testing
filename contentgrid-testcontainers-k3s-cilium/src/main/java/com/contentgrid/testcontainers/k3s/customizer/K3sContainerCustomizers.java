@@ -45,4 +45,14 @@ public interface K3sContainerCustomizers {
      */
     <T extends K3sContainerCustomizer> K3sContainerCustomizers configure(Class<T> customizerClass,
             UnaryOperator<T> configurer);
+
+    /**
+     * Configures a customizer in the container, if it already exists.
+     * If the customizer of that type does not exist, but is created later, the configuration is still applied
+     *
+     * @param customizerClass The class of the customizer to configure
+     * @param configurer Configuration function to apply on the customizer
+     */
+    <T extends K3sContainerCustomizer> K3sContainerCustomizers maybeConfigure(Class<T> customizerClass, UnaryOperator<T> configurer);
+
 }
