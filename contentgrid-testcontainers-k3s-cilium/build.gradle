@@ -37,4 +37,5 @@ dependencies {
 
 test {
     useJUnitPlatform()
+    systemProperty 'jdk.httpclient.allowRestrictedHeaders', 'host'
 }
