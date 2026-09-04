@@ -1,5 +1,7 @@
 package com.contentgrid.testcontainers.k3s.customizer.ingress;
 
+import com.contentgrid.testcontainers.k3s.customizer.ClusterDomainsK3sContainerCustomizer;
+import com.contentgrid.testcontainers.k3s.customizer.ClusterDomainsK3sContainerCustomizer.ResolutionTarget;
 import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizer;
 import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizers;
 import com.contentgrid.testcontainers.k3s.customizer.WaitStrategyCustomizer;
@@ -16,6 +18,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -26,7 +29,7 @@ import org.testcontainers.k3s.K3sContainer;
 
 /**
  * Installs <a href="https://traefik.io/">Traefik</a> as an ingress controller,
- * with a fixed binding for HTTP to port 80 on the host.
+ * with optionally a fixed binding for HTTP to port 80 on the host.
  */
 @AllArgsConstructor
 public class TraefikIngressK3sContainerCustomizer implements K3sContainerCustomizer {
@@ -35,11 +38,12 @@ public class TraefikIngressK3sContainerCustomizer implements K3sContainerCustomi
             .disable(Feature.WRITE_DOC_START_MARKER)
             .enable(Feature.INDENT_ARRAYS_WITH_INDICATOR)
     );
+    private static final String EXPOSE_NODEPORT_KEY = "ports.web.nodePort";
 
     public TraefikIngressK3sContainerCustomizer() {
         this(Map.of(
                 "logs.access.enabled", true,
-                "ports.web.nodePort", 32080
+                EXPOSE_NODEPORT_KEY, 32080
         ));
     }
 
@@ -59,6 +63,18 @@ public class TraefikIngressK3sContainerCustomizer implements K3sContainerCustomi
      */
     public TraefikIngressK3sContainerCustomizer withHelmValue(String key, Object value) {
         return withAdditionalHelmValues(Map.of(key, value));
+    }
+
+    /**
+     * Removes a helm value from the traefik installation
+     * @param keys The helm value key (dot-separated) to remove
+     */
+    public TraefikIngressK3sContainerCustomizer withoutHelmValue(String ...keys) {
+        var copy = new HashMap<>(helmValues);
+        for (var key : keys) {
+            copy.remove(key);
+        }
+        return withHelmValues(Collections.unmodifiableMap(copy));
     }
 
     private TraefikIngressK3sContainerCustomizer withAdditionalHelmValues(Map<String, Object> additionalValues) {
@@ -86,15 +102,53 @@ public class TraefikIngressK3sContainerCustomizer implements K3sContainerCustomi
         ));
     }
 
+    /**
+     * Disables exposing a node port for the traefik service.
+     * This also disables the fixed port-binding on the docker host.
+     * <p>
+     * To access traefik in this case, you should use a kubernetes portforward:
+     * <code>
+     * var pf = client.pods()
+     *      .inNamespace("kube-system")
+     *      .withLabel("app.kubernetes.io/name", "traefik")
+     *      .resources()
+     *      .findFirst()
+     *      .orElseThrow()
+     *      .portForward(8000);
+     * </code>
+     */
+    public TraefikIngressK3sContainerCustomizer withoutExposedPort() {
+        return withoutHelmValue(EXPOSE_NODEPORT_KEY);
+    }
+
     @Override
     public void onRegister(K3sContainerCustomizers customizers) {
-        customizers.configure(WaitStrategyCustomizer.class, wait -> wait.withAdditionalWaitStrategy(
-                getClass(),
-                Wait.forHttp("/")
-                        .forPort(32080)
-                        .forStatusCodeMatching((code) -> true)
-                        .withStartupTimeout(Duration.ofMinutes(2))
-        ));
+        onConfigure(customizers);
+    }
+
+    @Override
+    public void onConfigure(K3sContainerCustomizers customizers) {
+        exposedNodePort().ifPresentOrElse(exposedPort -> {
+            customizers.configure(WaitStrategyCustomizer.class, wait -> wait.withAdditionalWaitStrategy(
+                    getClass(),
+                    Wait.forHttp("/")
+                            .forPort(exposedPort)
+                            .forStatusCodeMatching((code) -> true)
+                            .withStartupTimeout(Duration.ofMinutes(2))
+            ));
+            customizers.maybeConfigure(ClusterDomainsK3sContainerCustomizer.class, domains -> domains.withResolution(ResolutionTarget.HOST_BRIDGE_IP));
+        }, () -> {
+            customizers.maybeConfigure(WaitStrategyCustomizer.class, wait -> wait.withAdditionalWaitStrategy(
+                    getClass(),
+                    Wait.forSuccessfulCommand("kubectl wait pod --namespace kube-system --selector app.kubernetes.io/name=traefik --for=condition=ready --timeout=0")
+                            .withStartupTimeout(Duration.ofMinutes(2))
+            ));
+            customizers.maybeConfigure(ClusterDomainsK3sContainerCustomizer.class, domains -> domains.withResolution(ResolutionTarget.INTERNAL_NODE_IP));
+        });
+    }
+
+    private Optional<Integer> exposedNodePort() {
+        return Optional.ofNullable((Integer) helmValues.get(EXPOSE_NODEPORT_KEY));
     }
 
     @Override
@@ -104,16 +158,18 @@ public class TraefikIngressK3sContainerCustomizer implements K3sContainerCustomi
         command.remove("--disable=traefik");
         container.setCommandParts(command.toArray(String[]::new));
 
-        // Configure traefik
-        // exposing traefik on fixed port 80 on the host - traefik-config.yaml
-        // ideally, we should get rid of the fixed port mapping - problems:
-        // - keycloak auth url + keycloak redirect configuration
-        container.addExposedPort(32080);
-        container.withCreateContainerCmdModifier(createContainerCmd -> {
-            createContainerCmd.getHostConfig().getPortBindings().bind(
-                    new ExposedPort(32080),
-                     Binding.bindPort(80)
-             );
+        exposedNodePort().ifPresent(exposedPort -> {
+            // Configure traefik
+            // exposing traefik on fixed port 80 on the host - traefik-config.yaml
+            // ideally, we should get rid of the fixed port mapping - problems:
+            // - keycloak auth url + keycloak redirect configuration
+            container.addExposedPort(exposedPort);
+            container.withCreateContainerCmdModifier(createContainerCmd -> {
+                createContainerCmd.getHostConfig().getPortBindings().bind(
+                        new ExposedPort(exposedPort),
+                        Binding.bindPort(80)
+                );
+            });
         });
         container.withCopyToContainer(
                 Transferable.of(templateHelmChartConfig()),
