@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.DnsResolver;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -31,6 +32,7 @@ import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.DockerClientFactory;
 
+@Slf4j
 class TraefikIngressK3sContainerCustomizerTest extends AbstractK3sContainerCustomizerTest {
     @Test
     void ingressAccessible() throws IOException {
@@ -83,10 +85,21 @@ class TraefikIngressK3sContainerCustomizerTest extends AbstractK3sContainerCusto
         deployYaml(client, "whoami.yaml");
 
 
+        client.pods()
+                .inNamespace("kube-system")
+                .withLabel("app.kubernetes.io/name", "traefik")
+                .resources()
+                .forEach(podResource -> {
+                    podResource.watchLog(System.err);
+                });
         // whoami doesn't have a proper readiness probe, so we need to retry a couple of times in case the service is not ready yet
         Awaitility.await()
                 .atMost(30, TimeUnit.SECONDS)
                 .untilAsserted(() -> {
+                    log.info("Ingress {}", client.network().v1().ingresses()
+                            .inNamespace("default")
+                            .withName("whoami")
+                            .get());
                     var httpClient = HttpClient.newBuilder()
                             .build();
                     var response = httpClient.send(HttpRequest.newBuilder()
@@ -118,10 +131,23 @@ class TraefikIngressK3sContainerCustomizerTest extends AbstractK3sContainerCusto
         deployYaml(client, "whoami.yaml");
 
 
+        client.pods()
+                .inNamespace("kube-system")
+                .withLabel("app.kubernetes.io/name", "traefik")
+                .resources()
+                .forEach(podResource -> {
+                    podResource.watchLog(System.err);
+                });
+
         // whoami doesn't have a proper readiness probe, so we need to retry a couple of times in case the service is not ready yet
         Awaitility.await()
                 .atMost(30, TimeUnit.SECONDS)
                 .untilAsserted(() -> {
+                    log.info("Ingress {}", client.network().v1().ingresses()
+                            .inNamespace("default")
+                            .withName("whoami")
+                            .get());
+
                     var httpClient = HttpClient.newBuilder()
                             .build();
                     var response = httpClient.send(HttpRequest.newBuilder()
@@ -174,13 +200,18 @@ class TraefikIngressK3sContainerCustomizerTest extends AbstractK3sContainerCusto
                 .orElseThrow()
                 .portForward(8000);
 
-        var httpClient = HttpClient.newBuilder()
-                .build();
+
 
         // whoami doesn't have a proper readiness probe, so we need to retry a couple of times in case the service is not ready yet
         Awaitility.await()
                 .atMost(30, TimeUnit.SECONDS)
                 .untilAsserted(() -> {
+                    var httpClient = HttpClient.newBuilder()
+                            .build();
+                    log.info("Ingress {}", client.network().v1().ingresses()
+                            .inNamespace("default")
+                            .withName("whoami")
+                            .get());
                     var response = httpClient.send(HttpRequest.newBuilder()
                             .GET()
                             .uri(URI.create("http://localhost:" + pf.getLocalPort() + "/api"))
