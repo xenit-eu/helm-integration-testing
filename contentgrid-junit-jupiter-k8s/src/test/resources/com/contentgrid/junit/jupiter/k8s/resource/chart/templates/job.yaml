@@ -6,6 +6,12 @@ spec:
   template:
     spec:
       restartPolicy: Never
+      initContainers:
+        - image: ghcr.io/xenit-eu/kubectl:latest
+          name: welcome
+          command:
+            - /bin/echo
+            - Hello from the init container
       containers:
         - image: ghcr.io/xenit-eu/kubectl:latest
           name: hello

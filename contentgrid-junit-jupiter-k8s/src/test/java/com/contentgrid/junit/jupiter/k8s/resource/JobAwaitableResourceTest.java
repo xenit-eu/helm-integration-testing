@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 @HelmClient
 @DockerRegistryCache(name = "docker.io", proxy = "https://registry-1.docker.io")
 class JobAwaitableResourceTest {
+
     static KubernetesClient kubernetesClient;
 
     @HelmChart(chart = "classpath:chart")
@@ -36,6 +37,11 @@ class JobAwaitableResourceTest {
                 .singleElement()
                 .satisfies(job -> {
                     assertThat(job.logs()).satisfiesExactly(
+                            line -> {
+                                assertThat(line.container()).isEqualTo("welcome");
+                                assertThat(line.timestamp()).isNotNull();
+                                assertThat(line.line()).isEqualTo("Hello from the init container");
+                            },
                             line -> {
                                 assertThat(line.container()).isEqualTo("hello");
                                 assertThat(line.timestamp()).isNotNull();
@@ -57,10 +63,6 @@ class JobAwaitableResourceTest {
                                 assertThat(line.line()).isEqualTo("Buh Bye");
                             }
                     );
-
                 });
-
-
     }
-
 }
