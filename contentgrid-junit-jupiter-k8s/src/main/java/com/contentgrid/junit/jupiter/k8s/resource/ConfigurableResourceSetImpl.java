@@ -120,12 +120,14 @@ class ConfigurableResourceSetImpl implements ConfigurableResourceSet {
     private void include(@NonNull List<HasMetadata> resources, String defaultNamespace) {
         for (var resource : resources) {
             if(RESOURCE_ACCESSORS.containsKey(resource.getClass())) {
-                include(
-                        resource.getClass(),
-                        com.contentgrid.junit.jupiter.k8s.resource.ResourceMatcher.named(resource.getMetadata().getName())
-                                .inNamespace(
-                                        Objects.requireNonNullElse(resource.getMetadata().getNamespace(), defaultNamespace))
-                );
+                var matcher = com.contentgrid.junit.jupiter.k8s.resource.ResourceMatcher.named(resource.getMetadata().getName());
+                if (resource.getMetadata().getNamespace() != null) {
+                    matcher = matcher.inNamespace(resource.getMetadata().getNamespace());
+                } else if(defaultNamespace != null) {
+                    matcher = matcher.inNamespace(defaultNamespace);
+                }
+                // else, fall back to the default namespace of the kubernetes client
+                include(resource.getClass(), matcher);
             }
         }
     }
