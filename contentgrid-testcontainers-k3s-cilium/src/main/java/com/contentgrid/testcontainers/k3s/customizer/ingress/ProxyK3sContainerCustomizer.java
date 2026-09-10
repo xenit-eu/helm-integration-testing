@@ -23,7 +23,9 @@ public class ProxyK3sContainerCustomizer implements K3sContainerCustomizer {
     public void onRegister(K3sContainerCustomizers customizers) {
         customizers.configure(WaitStrategyCustomizer.class, wait -> wait.withAdditionalWaitStrategy(
                 getClass(),
-                Wait.forListeningPorts(PROXY_NODE_PORT)
+                // The nodePort itself can not be waited on: kube-proxy does not open a listening socket for it,
+                // and tinyproxy does not answer to non-proxied HTTP requests
+                Wait.forSuccessfulCommand("kubectl wait pod --namespace kube-system --selector helm-integration-testing.contentgrid.com/app=tinyproxy --for=condition=ready --timeout=0")
                         .withStartupTimeout(Duration.ofMinutes(2))
         ));
         customizers.maybeConfigure(

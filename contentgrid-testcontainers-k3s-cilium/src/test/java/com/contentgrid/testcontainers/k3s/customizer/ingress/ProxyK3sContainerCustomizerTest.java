@@ -49,6 +49,46 @@ class ProxyK3sContainerCustomizerTest extends AbstractK3sContainerCustomizerTest
     }
 
     @Test
+    void proxyToClusterDomain() throws IOException, InterruptedException {
+        var container = createContainerOnly(customizers -> {
+            customizers.configure(ProxyK3sContainerCustomizer.class);
+            customizers.configure(TraefikIngressK3sContainerCustomizer.class);
+            customizers.configure(ClusterDomainsK3sContainerCustomizer.class, dns -> dns.withDomains("ingress.test"));
+        });
+
+        var client = createClientFromContainer(container);
+
+        var resources = client.load(getClass().getResourceAsStream("test-ingress.yaml")).serverSideApply();
+
+        new KubernetesResourceWaiter(client)
+                .include(resources)
+                .await(await -> await.atMost(1, TimeUnit.MINUTES))
+                .close();
+
+        var httpClient = HttpClient.newBuilder()
+                .proxy(ProxySelector.of(ProxyK3sContainerCustomizer.getProxyAddress(container)))
+                .build();
+
+        // Without a default-deny network policy, the internal service can be accessed directly
+        var response = httpClient.send(HttpRequest.newBuilder()
+                .GET()
+                .uri(URI.create("http://test-ingress.default.svc.cluster.local"))
+                .build(), respInfo -> BodySubscribers.ofString(StandardCharsets.UTF_8));
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.body()).contains("Welcome to nginx!");
+
+        // As well as through the ingress controller, on the cluster domain
+        response = httpClient.send(HttpRequest.newBuilder()
+                .GET()
+                .uri(URI.create("http://ingress.test"))
+                .build(), respInfo -> BodySubscribers.ofString(StandardCharsets.UTF_8));
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.body()).contains("Welcome to nginx!");
+    }
+
+    @Test
     void proxyDisablesStaticPublicTraefikPort() {
         var container = createContainerOnly(customizers -> {
             customizers.configure(ProxyK3sContainerCustomizer.class);
