@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.contentgrid.junit.jupiter.k8s.wait.KubernetesResourceWaiter;
 import com.contentgrid.testcontainers.k3s.customizer.AbstractK3sContainerCustomizerTest;
 import com.contentgrid.testcontainers.k3s.customizer.ClusterDomainsK3sContainerCustomizer;
+import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizer;
+import com.contentgrid.testcontainers.k3s.customizer.cilium.CiliumK3sContainerCustomizer;
 import com.contentgrid.testcontainers.k3s.customizer.cilium.DefaultDenyCiliumK3sContainerCustomizer;
 import com.github.dockerjava.api.model.Ports.Binding;
 import java.io.IOException;
@@ -17,6 +19,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ProxyK3sContainerCustomizerTest extends AbstractK3sContainerCustomizerTest {
     @Test
@@ -47,12 +52,19 @@ class ProxyK3sContainerCustomizerTest extends AbstractK3sContainerCustomizerTest
         assertThat(response.body()).contains("Welcome to nginx!");
     }
 
-    @Test
-    void proxyToClusterDomain() throws IOException, InterruptedException {
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(classes = {
+            CiliumK3sContainerCustomizer.class
+    })
+    void proxyToClusterDomain(Class<? extends K3sContainerCustomizer> additionalCustomizer) throws IOException, InterruptedException {
         var container = createContainerOnly(customizers -> {
             customizers.configure(ProxyK3sContainerCustomizer.class);
             customizers.configure(TraefikIngressK3sContainerCustomizer.class);
             customizers.configure(ClusterDomainsK3sContainerCustomizer.class, dns -> dns.withDomains("ingress.test"));
+            if (additionalCustomizer != null) {
+                customizers.configure(additionalCustomizer);
+            }
         });
 
         var client = createClientFromContainer(container);
