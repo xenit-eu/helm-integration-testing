@@ -90,8 +90,7 @@ class ConfigurableResourceSetImplTest {
 
         var appliedResources = kubernetesClient.load(new ByteArrayInputStream(dataSet)).serverSideApply();
 
-        try {
-            var resourceSet = new ConfigurableResourceSetImpl(kubernetesClient);
+        try (var resourceSet = new ConfigurableResourceSetImpl(kubernetesClient)) {
             resourceSet.include(appliedResources);
 
             assertThat(resourceSet.stream())
