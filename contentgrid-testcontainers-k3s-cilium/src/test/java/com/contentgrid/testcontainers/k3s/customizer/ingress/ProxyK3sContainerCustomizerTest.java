@@ -1,7 +1,6 @@
 package com.contentgrid.testcontainers.k3s.customizer.ingress;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.contentgrid.junit.jupiter.k8s.wait.KubernetesResourceWaiter;
 import com.contentgrid.testcontainers.k3s.customizer.AbstractK3sContainerCustomizerTest;

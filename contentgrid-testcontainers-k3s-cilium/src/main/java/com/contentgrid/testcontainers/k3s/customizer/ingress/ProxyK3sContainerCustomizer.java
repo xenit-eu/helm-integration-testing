@@ -41,6 +41,14 @@ public class ProxyK3sContainerCustomizer implements K3sContainerCustomizer {
                 CustomizerUtils.forClassResource(ProxyK3sContainerCustomizer.class, "tinyproxy.yaml"),
                 "/var/lib/rancher/k3s/server/manifests/tinyproxy.yaml"
         );
+        // The kubernetes NetworkPolicy in tinyproxy.yaml can not express egress to the node itself,
+        // which is required to reach services that are exposed on the node (like the ingress controller)
+        // This is a separate file, because it may fail to apply when Cilium is not installed,
+        // but a failure to apply this file will not result in the rest of the application failing to start
+        container.withCopyToContainer(
+                CustomizerUtils.forClassResource(ProxyK3sContainerCustomizer.class, "tinyproxy-cilium.yaml"),
+                "/var/lib/rancher/k3s/server/manifests/tinyproxy-cilium.yaml"
+        );
     }
 
     /**
