@@ -18,6 +18,7 @@ import java.net.http.HttpResponse.BodySubscribers;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import org.assertj.core.util.Arrays;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
@@ -89,14 +90,19 @@ class ProxyK3sContainerCustomizerTest extends AbstractK3sContainerCustomizerTest
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.body()).contains("Welcome to nginx!");
 
-        // As well as through the ingress controller, on the cluster domain
-        response = httpClient.send(HttpRequest.newBuilder()
-                .GET()
-                .uri(URI.create("http://ingress.test"))
-                .build(), respInfo -> BodySubscribers.ofString(StandardCharsets.UTF_8));
+        // retry a couple of times, because traefik takes some time to get the ingress set up
+        Awaitility.await()
+                .atMost(30, TimeUnit.SECONDS)
+                .untilAsserted(() -> {
+                    // As well as through the ingress controller, on the cluster domain
+                    var resp = httpClient.send(HttpRequest.newBuilder()
+                            .GET()
+                            .uri(URI.create("http://ingress.test"))
+                            .build(), respInfo -> BodySubscribers.ofString(StandardCharsets.UTF_8));
 
-        assertThat(response.statusCode()).isEqualTo(200);
-        assertThat(response.body()).contains("Welcome to nginx!");
+                    assertThat(resp.statusCode()).isEqualTo(200);
+                    assertThat(resp.body()).contains("Welcome to nginx!");
+                });
     }
 
     @Test
@@ -147,16 +153,21 @@ class ProxyK3sContainerCustomizerTest extends AbstractK3sContainerCustomizerTest
         // because of the ingress policy on the test-ingress service only allowing the ingress controller (and not the proxy)
         assertThat(response.statusCode()).isEqualTo(500);
 
-        response = httpClient.send(HttpRequest.newBuilder()
-                .GET()
-                .uri(URI.create("http://ingress.test"))
-                .build(), respInfo -> BodySubscribers.ofString(StandardCharsets.UTF_8));
+        // retry a couple of times, because traefik takes some time to get the ingress set up
+        Awaitility.await()
+                .atMost(30, TimeUnit.SECONDS)
+                .untilAsserted(() -> {
+                    var resp = httpClient.send(HttpRequest.newBuilder()
+                            .GET()
+                            .uri(URI.create("http://ingress.test"))
+                            .build(), respInfo -> BodySubscribers.ofString(StandardCharsets.UTF_8));
 
-        // But we can access it through the ingress controller
-        // because the ingress policy of the ingress controller allows everyone
-        // and the ingress policy of the test-ingress service allows the ingress controller
-        assertThat(response.statusCode()).isEqualTo(200);
-        assertThat(response.body()).contains("Welcome to nginx!");
+                    // But we can access it through the ingress controller
+                    // because the ingress policy of the ingress controller allows everyone
+                    // and the ingress policy of the test-ingress service allows the ingress controller
+                    assertThat(resp.statusCode()).isEqualTo(200);
+                    assertThat(resp.body()).contains("Welcome to nginx!");
+                });
     }
 
 }
