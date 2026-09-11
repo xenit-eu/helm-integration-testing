@@ -79,20 +79,22 @@ class TraefikIngressK3sContainerCustomizerTest extends AbstractK3sContainerCusto
 
         deployYaml(client, "whoami.yaml");
 
-        var httpClient = HttpClient.newBuilder()
-                .build();
 
         // whoami doesn't have a proper readiness probe, so we need to retry a couple of times in case the service is not ready yet
         Awaitility.await()
                 .atMost(5, TimeUnit.SECONDS)
                 .untilAsserted(() -> {
+                    var httpClient = HttpClient.newBuilder()
+                            .build();
                     var response = httpClient.send(HttpRequest.newBuilder()
                             .GET()
                             .uri(URI.create("http://localhost/api"))
                             .header("Host", "whoami.test")
                             .build(), this::whoamiResponse);
 
-                    assertThat(response.statusCode()).isEqualTo(200);
+                    assertThat(response.statusCode())
+                            .withFailMessage("Request failed %d: %s", response.statusCode(), response.body())
+                            .isEqualTo(200);
                     // We have succesfully upgrade our frontend protocol to http2
                     assertThat(response.version()).isEqualTo(Version.HTTP_2);
                     assertThat(response.body()).isInstanceOfSatisfying(WhoamiResponse.class, body -> {
@@ -112,20 +114,22 @@ class TraefikIngressK3sContainerCustomizerTest extends AbstractK3sContainerCusto
 
         deployYaml(client, "whoami.yaml");
 
-        var httpClient = HttpClient.newBuilder()
-                .build();
 
         // whoami doesn't have a proper readiness probe, so we need to retry a couple of times in case the service is not ready yet
         Awaitility.await()
                 .atMost(5, TimeUnit.SECONDS)
                 .untilAsserted(() -> {
+                    var httpClient = HttpClient.newBuilder()
+                            .build();
                     var response = httpClient.send(HttpRequest.newBuilder()
                             .GET()
                             .uri(URI.create("http://localhost/api"))
                             .header("Host", "whoami.test")
                             .build(), this::whoamiResponse);
 
-                    assertThat(response.statusCode()).isEqualTo(200);
+                    assertThat(response.statusCode())
+                            .withFailMessage("Request failed %d: %s", response.statusCode(), response.body())
+                            .isEqualTo(200);
                     // We have succesfully upgrade our frontend protocol to http2
                     assertThat(response.version()).isEqualTo(Version.HTTP_2);
                     assertThat(response.body()).isInstanceOfSatisfying(WhoamiResponse.class, body -> {
