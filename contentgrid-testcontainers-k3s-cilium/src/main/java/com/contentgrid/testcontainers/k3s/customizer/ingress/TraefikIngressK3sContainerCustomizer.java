@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -48,7 +49,7 @@ public class TraefikIngressK3sContainerCustomizer implements K3sContainerCustomi
      * <p>
      * The keys can be dot-separated, which is automatically expanded into a valid tree structure
      */
-    @With
+    @With(AccessLevel.PRIVATE)
     @NonNull
     private final Map<String, Object> helmValues;
 
