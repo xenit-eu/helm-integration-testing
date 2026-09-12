@@ -1,9 +1,9 @@
 package com.contentgrid.testcontainers.k3s.customizer;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.UnaryOperator;
 import lombok.SneakyThrows;
 import org.testcontainers.k3s.K3sContainer;
@@ -14,16 +14,24 @@ import org.testcontainers.k3s.K3sContainer;
 public class K3sContainerCustomizersImpl implements K3sContainerCustomizer, K3sContainerCustomizers {
     private boolean isFrozen;
     private final Map<Class<? extends K3sContainerCustomizer>, K3sContainerCustomizer> customizers = new LinkedHashMap<>();
+    private final Map<Class<? extends K3sContainerCustomizer>, UnaryOperator<K3sContainerCustomizer>> deferredConfigurers = new HashMap<>();
 
     @Override
     public K3sContainerCustomizers customize(Iterable<? extends K3sContainerCustomizer> customizersToRegister) {
         checkFrozen();
         for (var customizer : customizersToRegister) {
-            var existing = customizers.putIfAbsent(customizer.getClass(), customizer);
-            if(existing != null) {
+            var clazz = customizer.getClass();
+            var existing = customizers.putIfAbsent(clazz, customizer);
+            if (existing != null) {
                 throw new IllegalArgumentException("Customizer %s is already registered".formatted(customizer.getClass()));
             }
+            customizer = customizers.compute(
+                    clazz,
+                    (key, c) -> deferredConfigurers.getOrDefault(key, UnaryOperator.identity()).apply(c)
+            );
+            deferredConfigurers.remove(clazz);
             customizer.onRegister(this);
+
         }
         return this;
     }
@@ -31,20 +39,33 @@ public class K3sContainerCustomizersImpl implements K3sContainerCustomizer, K3sC
     @Override
     public <T extends K3sContainerCustomizer> K3sContainerCustomizers configure(Class<T> customizerClass, UnaryOperator<T> configurer) {
         checkFrozen();
-        AtomicBoolean wasRegistered = new AtomicBoolean(false);
-        var customizer = customizers.compute(customizerClass, (clazz, existing) -> {
-            if(existing == null) {
-                existing = instantiate(customizerClass);
-                wasRegistered.set(true);
-            }
-
-            return configurer.apply((T)existing);
-        });
-        if(wasRegistered.get()) {
-            customizer.onRegister(this);
+        if (!customizers.containsKey(customizerClass)) {
+            customize(instantiate(customizerClass));
         }
+
+        var customizer = customizers.compute(customizerClass, (key, c) -> configurer.apply((T)c));
+
         customizer.onConfigure(this);
 
+        return this;
+    }
+
+    @Override
+    public <T extends K3sContainerCustomizer> K3sContainerCustomizers maybeConfigure(Class<T> customizerClass,
+            UnaryOperator<T> configurer) {
+        checkFrozen();
+        if (customizers.containsKey(customizerClass)) {
+            return configure(customizerClass, configurer);
+        }
+
+        deferredConfigurers.compute(customizerClass, (_key, existingConfigurer) -> {
+            if (existingConfigurer == null) {
+                return (UnaryOperator<K3sContainerCustomizer>) configurer;
+            } else {
+                return customizer -> configurer.apply((T)existingConfigurer.apply(customizer));
+            }
+
+        });
         return this;
     }
 

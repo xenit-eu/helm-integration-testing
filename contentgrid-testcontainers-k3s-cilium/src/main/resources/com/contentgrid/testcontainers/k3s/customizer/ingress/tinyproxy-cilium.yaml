@@ -1,0 +1,18 @@
+# Cilium-specific counterpart of the NetworkPolicy in tinyproxy.yaml
+# The kubernetes NetworkPolicy can only select pods, while the proxy also has to be able to reach
+# services that are exposed on the node itself (a NodePort or a hostPort, as used by the ingress controller)
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: tinyproxy
+  namespace: kube-system
+  labels:
+    helm-integration-testing.contentgrid.com/app: tinyproxy
+spec:
+  endpointSelector:
+    matchLabels:
+      helm-integration-testing.contentgrid.com/app: tinyproxy
+  egress:
+    # Anything inside the cluster: pods, as well as the nodes themselves
+    - toEntities:
+        - cluster
