@@ -17,8 +17,21 @@ spec:
       containers:
         - name: tinyproxy
           image: monokal/tinyproxy:latest@sha256:2c1b6f187fe18a993ec6e88cdb12c8f1d28d7416bd73492289aa5f74f687c672
-          args:
-          - ANY
+          # The image entrypoint script is bypassed:
+          # - Some hosts (e.g. Ubuntu 26.04) ship an AppArmor profile that attaches to /usr/bin/tinyproxy,
+          #   which also applies to the (unconfined) pods in k3s. It denies tinyproxy creating its shared memory in /tmp,
+          #   so tinyproxy fails to start. Running a copy of the binary from a different path avoids the profile attachment.
+          #   (A symlink does not work, AppArmor attaches based on the resolved path)
+          # - The entrypoint script keeps running (tailing the log) when tinyproxy fails to start,
+          #   running tinyproxy in the foreground makes the container fail instead.
+          command:
+            - /bin/sh
+            - -c
+            - |
+              cp /usr/bin/tinyproxy /usr/local/bin/tinyproxy
+              # Allow all clients to use the proxy
+              sed -i -e 's/^Allow /#Allow /' /etc/tinyproxy/tinyproxy.conf
+              exec /usr/local/bin/tinyproxy -d
           ports:
             - containerPort: 8888
               name: http
