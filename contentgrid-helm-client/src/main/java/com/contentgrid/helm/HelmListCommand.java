@@ -1,10 +1,7 @@
 package com.contentgrid.helm;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.ZonedDateTime;
 import java.util.List;
-import lombok.Value;
 
 public interface HelmListCommand {
 

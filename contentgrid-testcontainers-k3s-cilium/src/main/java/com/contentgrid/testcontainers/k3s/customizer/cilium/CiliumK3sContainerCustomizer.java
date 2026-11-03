@@ -13,7 +13,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Stream;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.k3s.K3sContainer;

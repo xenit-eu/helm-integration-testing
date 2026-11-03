@@ -5,7 +5,6 @@ import com.contentgrid.helm.HelmDependencyCommand.HelmDependency;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
