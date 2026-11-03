@@ -32,7 +32,7 @@ public abstract class AbstractK3sContainerCustomizerTest {
     }
 
     protected K3sContainer createContainerOnly(Consumer<K3sContainerCustomizers> configuration) {
-        var container = new CustomizableK3sContainer(DockerImageName.parse("rancher/k3s:v1.33.1-k3s1"));
+        var container = new CustomizableK3sContainer(DockerImageName.parse("rancher/k3s:v1.34.12-k3s1"));
         configuration.accept(container);
         containers.add(container);
         container.withLogConsumer(new Slf4jLogConsumer(log, true));
