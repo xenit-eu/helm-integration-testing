@@ -152,7 +152,7 @@ class ProxyK3sContainerCustomizerTest extends AbstractK3sContainerCustomizerTest
 
         // We are not able to access this internal service directly
         // because of the ingress policy on the test-ingress service only allowing the ingress controller (and not the proxy)
-        assertThat(response.statusCode()).isEqualTo(500);
+        assertThat(response.statusCode()).isEqualTo(503);
 
         // retry a couple of times, because traefik takes some time to get the ingress set up
         Awaitility.await()
