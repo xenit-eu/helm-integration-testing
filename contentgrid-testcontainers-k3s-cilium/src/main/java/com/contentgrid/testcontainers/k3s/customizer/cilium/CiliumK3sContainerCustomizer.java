@@ -23,12 +23,14 @@ import org.testcontainers.k3s.K3sContainer;
  */
 public class CiliumK3sContainerCustomizer implements K3sContainerCustomizer {
 
+    public static final Duration TIMEOUT = Duration.ofMinutes(4);
+
     @Override
     public void onRegister(K3sContainerCustomizers customizers) {
         customizers.configure(WaitStrategyCustomizer.class, wait -> wait.withAdditionalWaitStrategy(
                                 getClass(),
                                 Wait.forLogMessage(".*Controller detected that some Nodes are Ready.*", 1)
-                                        .withStartupTimeout(Duration.ofMinutes(4))
+                                        .withStartupTimeout(TIMEOUT)
                         )
                         // The default wait strategy is based on a log message from flannel, which is disabled here
                         .suppressWaitStrategy(K3sContainer.class)

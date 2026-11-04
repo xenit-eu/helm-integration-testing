@@ -5,13 +5,13 @@ import com.contentgrid.testcontainers.k3s.customizer.ClusterDomainsK3sContainerC
 import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizer;
 import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizers;
 import com.contentgrid.testcontainers.k3s.customizer.WaitStrategyCustomizer;
+import com.contentgrid.testcontainers.k3s.customizer.cilium.CiliumK3sContainerCustomizer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator.Feature;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports.Binding;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -116,14 +116,14 @@ public class TraefikIngressK3sContainerCustomizer implements K3sContainerCustomi
                     Wait.forHttp("/")
                             .forPort(exposedPort)
                             .forStatusCodeMatching((code) -> true)
-                            .withStartupTimeout(Duration.ofMinutes(2))
+                            .withStartupTimeout(CiliumK3sContainerCustomizer.TIMEOUT)
             ));
             customizers.maybeConfigure(ClusterDomainsK3sContainerCustomizer.class, domains -> domains.withResolution(ResolutionTarget.HOST_BRIDGE_IP));
         }, () -> {
             customizers.configure(WaitStrategyCustomizer.class, wait -> wait.withAdditionalWaitStrategy(
                     getClass(),
                     Wait.forSuccessfulCommand("kubectl wait pod --namespace kube-system --selector app.kubernetes.io/name=traefik --for=condition=ready --timeout=0")
-                            .withStartupTimeout(Duration.ofMinutes(2))
+                            .withStartupTimeout(CiliumK3sContainerCustomizer.TIMEOUT)
             ));
             customizers.maybeConfigure(ClusterDomainsK3sContainerCustomizer.class, domains -> domains.withResolution(ResolutionTarget.INTERNAL_NODE_IP));
         });

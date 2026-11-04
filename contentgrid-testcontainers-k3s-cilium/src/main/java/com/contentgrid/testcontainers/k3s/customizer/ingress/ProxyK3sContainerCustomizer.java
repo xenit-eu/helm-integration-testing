@@ -4,8 +4,8 @@ import com.contentgrid.testcontainers.k3s.customizer.CustomizerUtils;
 import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizer;
 import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizers;
 import com.contentgrid.testcontainers.k3s.customizer.WaitStrategyCustomizer;
+import com.contentgrid.testcontainers.k3s.customizer.cilium.CiliumK3sContainerCustomizer;
 import java.net.InetSocketAddress;
-import java.time.Duration;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.k3s.K3sContainer;
 
@@ -26,7 +26,7 @@ public class ProxyK3sContainerCustomizer implements K3sContainerCustomizer {
                 // The nodePort itself can not be waited on: kube-proxy does not open a listening socket for it,
                 // and tinyproxy does not answer to non-proxied HTTP requests
                 Wait.forSuccessfulCommand("kubectl wait pod --namespace kube-system --selector helm-integration-testing.contentgrid.com/app=tinyproxy --for=condition=ready --timeout=0")
-                        .withStartupTimeout(Duration.ofMinutes(2))
+                        .withStartupTimeout(CiliumK3sContainerCustomizer.TIMEOUT)
         ));
         customizers.maybeConfigure(
                 TraefikIngressK3sContainerCustomizer.class,
