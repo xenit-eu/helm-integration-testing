@@ -85,25 +85,6 @@ public class TraefikIngressK3sContainerCustomizer implements K3sContainerCustomi
     }
 
     /**
-     * Disables forwarding of <code>Upgrade</code> and <code>Connection</code> headers to upstream services
-     */
-    public TraefikIngressK3sContainerCustomizer withoutUpstreamUpgradeHeader() {
-        return withAdditionalHelmValues(Map.of(
-                "ports.web.middlewares", "no-upgrade-header@file",
-                "providers.file.enabled", true,
-                "providers.file.content", """
-                          http:
-                            middlewares:
-                              no-upgrade-header:
-                                headers:
-                                  customRequestHeaders:
-                                    Upgrade: ""
-                                    Connection: ""
-                        """
-        ));
-    }
-
-    /**
      * Disables exposing a node port for the traefik service.
      * This also disables the fixed port-binding on the docker host.
      * <p>
