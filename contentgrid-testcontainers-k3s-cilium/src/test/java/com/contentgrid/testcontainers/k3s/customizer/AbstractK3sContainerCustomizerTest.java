@@ -1,7 +1,7 @@
 package com.contentgrid.testcontainers.k3s.customizer;
 
 import com.contentgrid.junit.jupiter.k8s.wait.KubernetesResourceWaiter;
-import com.contentgrid.junit.jupiter.k8s.wait.ResourceMatcher;
+import com.contentgrid.junit.jupiter.k8s.resource.ResourceMatcher;
 import com.contentgrid.testcontainers.k3s.CustomizableK3sContainer;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
