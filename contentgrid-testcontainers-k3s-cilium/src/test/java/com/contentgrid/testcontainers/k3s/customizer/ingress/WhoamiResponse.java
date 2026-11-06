@@ -1,11 +1,10 @@
 package com.contentgrid.testcontainers.k3s.customizer.ingress;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import lombok.Data;
-import lombok.SneakyThrows;
+import tools.jackson.databind.json.JsonMapper;
 
 @Data
 public class WhoamiResponse {
@@ -17,9 +16,8 @@ public class WhoamiResponse {
     private String method;
     private String remoteAddr;
 
-    @SneakyThrows
     public static WhoamiResponse read(InputStream inputStream) {
-        var om = new ObjectMapper();
-        return om.readValue(inputStream, WhoamiResponse.class);
+        var mapper = JsonMapper.builder().build();
+        return mapper.readValue(inputStream, WhoamiResponse.class);
     }
 }

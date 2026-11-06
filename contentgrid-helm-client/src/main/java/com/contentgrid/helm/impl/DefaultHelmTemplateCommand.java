@@ -2,13 +2,13 @@ package com.contentgrid.helm.impl;
 
 import com.contentgrid.helm.HelmTemplateCommand;
 import com.contentgrid.helm.HelmTemplateCommand.TemplateFlagHandler;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import tools.jackson.databind.json.JsonMapper;
 
 @RequiredArgsConstructor
 class DefaultHelmTemplateCommand implements HelmTemplateCommand {
@@ -18,7 +18,7 @@ class DefaultHelmTemplateCommand implements HelmTemplateCommand {
     private final CommandExecutor executor;
 
     @NonNull
-    private final ObjectMapper objectMapper;
+    private final JsonMapper jsonMapper;
 
     @Override
     public TemplateResult chart(String name, String chart, TemplateFlag... options) {
@@ -38,7 +38,7 @@ class DefaultHelmTemplateCommand implements HelmTemplateCommand {
         // chart reference is required
         args.add(chart);
 
-        var handler = new DefaultTemplateFlagHandler(args, objectMapper, !name.isEmpty());
+        var handler = new DefaultTemplateFlagHandler(args, jsonMapper, !name.isEmpty());
 
         flags.forEach(flag -> {
             flag.apply(handler);
@@ -52,8 +52,8 @@ class DefaultHelmTemplateCommand implements HelmTemplateCommand {
 
 class DefaultTemplateFlagHandler extends DefaultInstallOptionsHandler implements TemplateFlagHandler {
 
-    public DefaultTemplateFlagHandler(@NonNull List<String> arguments, @NonNull ObjectMapper objectMapper, boolean hasName) {
-        super(arguments, objectMapper, hasName);
+    public DefaultTemplateFlagHandler(@NonNull List<String> arguments, @NonNull JsonMapper jsonMapper, boolean hasName) {
+        super(arguments, jsonMapper, hasName);
     }
 
     @Override

@@ -7,11 +7,11 @@ import com.contentgrid.helm.HelmListCommand;
 import com.contentgrid.helm.HelmRepositoryCommand;
 import com.contentgrid.helm.HelmTemplateCommand;
 import com.contentgrid.helm.HelmUninstallCommand;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.databind.json.JsonMapper;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,12 +22,12 @@ class DefaultHelm implements Helm {
     private final CommandExecutor executor;
 
     @NonNull
-    private final ObjectMapper objectMapper;
+    private final JsonMapper jsonMapper;
 
 
     @Override
     public HelmListCommand list() {
-        return new DefaultHelmListCommand(this.executor, this.objectMapper);
+        return new DefaultHelmListCommand(this.executor, this.jsonMapper);
     }
 
     @Override
@@ -37,12 +37,12 @@ class DefaultHelm implements Helm {
 
     @Override
     public HelmRepositoryCommand repository() {
-        return new DefaultHelmRepositoryCommand(this.executor, this.objectMapper);
+        return new DefaultHelmRepositoryCommand(this.executor, this.jsonMapper);
     }
 
     @Override
     public HelmInstallCommand install() {
-        return new DefaultHelmInstallCommand(this.executor, this.objectMapper);
+        return new DefaultHelmInstallCommand(this.executor, this.jsonMapper);
     }
 
     @Override
@@ -52,7 +52,7 @@ class DefaultHelm implements Helm {
 
     @Override
     public HelmTemplateCommand template() {
-        return new DefaultHelmTemplateCommand(this.executor, this.objectMapper);
+        return new DefaultHelmTemplateCommand(this.executor, this.jsonMapper);
     }
 
     @Override

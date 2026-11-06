@@ -2,20 +2,19 @@ package com.contentgrid.testcontainers.k3s.customizer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import tools.jackson.databind.json.JsonMapper;
 
 class ImagePullRateLimitK3sContainerCustomizerTest extends AbstractK3sContainerCustomizerTest {
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final JsonMapper objectMapper = JsonMapper.builder().build();
 
     @Test
-    void disabledByDefault() throws JsonProcessingException {
+    void disabledByDefault() {
         assertThat(registryPullQps(customizers -> {})).isZero();
     }
 
@@ -24,7 +23,7 @@ class ImagePullRateLimitK3sContainerCustomizerTest extends AbstractK3sContainerC
             "3,3",
             ",5", // null keeps the kubelet default
     })
-    void configuredRateLimit(Integer pullsPerSecond, int expectedQps) throws JsonProcessingException {
+    void configuredRateLimit(Integer pullsPerSecond, int expectedQps) {
         assertThat(registryPullQps(customizers -> {
             customizers.configure(ImagePullRateLimitK3sContainerCustomizer.class, limit -> limit.withPullsPerSecond(pullsPerSecond));
         })).isEqualTo(expectedQps);
@@ -33,7 +32,7 @@ class ImagePullRateLimitK3sContainerCustomizerTest extends AbstractK3sContainerC
     /**
      * Reads the registry pull rate limit from the running configuration of the kubelet
      */
-    private int registryPullQps(Consumer<K3sContainerCustomizers> configuration) throws JsonProcessingException {
+    private int registryPullQps(Consumer<K3sContainerCustomizers> configuration) {
         KubernetesClient client = createContainer(configuration);
         var nodeName = client.nodes().list().getItems().get(0).getMetadata().getName();
 
