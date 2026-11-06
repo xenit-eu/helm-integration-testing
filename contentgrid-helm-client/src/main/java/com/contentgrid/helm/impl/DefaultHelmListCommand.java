@@ -4,14 +4,14 @@ import com.contentgrid.helm.HelmListCommand;
 import com.contentgrid.helm.HelmListCommand.HelmRelease;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
 @RequiredArgsConstructor
 public class DefaultHelmListCommand implements HelmListCommand {
@@ -22,7 +22,7 @@ public class DefaultHelmListCommand implements HelmListCommand {
     private final CommandExecutor executor;
 
     @NonNull
-    private final ObjectMapper objectMapper;
+    private final JsonMapper jsonMapper;
 
     public static final String CMD_LIST = "list";
 
@@ -38,7 +38,7 @@ public class DefaultHelmListCommand implements HelmListCommand {
 
         var stdout = String.join(System.lineSeparator(), this.executor.call(CMD_LIST, args));
 
-        return objectMapper.readValue(stdout, RELEASES_TYPEREF)
+        return jsonMapper.readValue(stdout, RELEASES_TYPEREF)
                 .stream().map(HelmRelease.class::cast).toList();
     }
 

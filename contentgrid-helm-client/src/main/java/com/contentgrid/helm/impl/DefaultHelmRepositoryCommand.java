@@ -2,13 +2,13 @@ package com.contentgrid.helm.impl;
 
 import com.contentgrid.helm.HelmRepositoryCommand;
 import com.contentgrid.helm.HelmRepositoryCommand.HelmRepository;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.util.List;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
 @RequiredArgsConstructor
 class DefaultHelmRepositoryCommand implements HelmRepositoryCommand {
@@ -22,14 +22,14 @@ class DefaultHelmRepositoryCommand implements HelmRepositoryCommand {
     private final CommandExecutor executor;
 
     @NonNull
-    private final ObjectMapper objectMapper;
+    private final JsonMapper jsonMapper;
 
     @Override
     @SneakyThrows
     public List<HelmRepository> list() {
         var stdout = this.executor.call(CMD_REPOSITORY, "list", "--output", "json");
 
-        return this.objectMapper.readValue(stdout, TYPEREF_REPOSITORIES)
+        return this.jsonMapper.readValue(stdout, TYPEREF_REPOSITORIES)
                 .stream().map(HelmRepository.class::cast).toList();
     }
 

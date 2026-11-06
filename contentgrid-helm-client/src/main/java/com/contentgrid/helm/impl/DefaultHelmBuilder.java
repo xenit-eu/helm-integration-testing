@@ -2,7 +2,6 @@ package com.contentgrid.helm.impl;
 
 import com.contentgrid.helm.Helm;
 import com.contentgrid.helm.HelmBuilder;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -12,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.With;
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.databind.json.JsonMapper;
 
 @Slf4j
 @NoArgsConstructor
@@ -51,9 +51,9 @@ public class DefaultHelmBuilder implements HelmBuilder {
         var env = createEnv();
         var exec = new ProcessBuilderHelmExecutor(env, workingDirectory != null ? workingDirectory.toFile() : null);
 
-        var objectMapper = new ObjectMapper().findAndRegisterModules();
+        var jsonMapper = JsonMapper.builder().build();
 
-        return new DefaultHelm(exec, objectMapper);
+        return new DefaultHelm(exec, jsonMapper);
     }
 
     private Map<String, String> createEnv() {

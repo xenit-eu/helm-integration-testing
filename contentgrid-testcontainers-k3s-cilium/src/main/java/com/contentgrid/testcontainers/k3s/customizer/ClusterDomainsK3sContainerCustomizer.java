@@ -1,9 +1,5 @@
 package com.contentgrid.testcontainers.k3s.customizer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator.Feature;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -11,10 +7,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
-import lombok.SneakyThrows;
 import lombok.With;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.k3s.K3sContainer;
+import tools.jackson.dataformat.yaml.YAMLMapper;
+import tools.jackson.dataformat.yaml.YAMLWriteFeature;
 
 /**
  * Configures domain names that will resolve to the docker host bridge IP itself
@@ -27,10 +24,10 @@ import org.testcontainers.k3s.K3sContainer;
 @EqualsAndHashCode
 @With
 public class ClusterDomainsK3sContainerCustomizer implements K3sContainerCustomizer {
-    private static final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory()
-            .disable(Feature.WRITE_DOC_START_MARKER)
-            .enable(Feature.INDENT_ARRAYS_WITH_INDICATOR)
-    );
+    private static final YAMLMapper yamlMapper = YAMLMapper.builder()
+            .disable(YAMLWriteFeature.WRITE_DOC_START_MARKER)
+            .enable(YAMLWriteFeature.INDENT_ARRAYS_WITH_INDICATOR)
+            .build();
 
     private final Set<String> domains;
 
@@ -85,7 +82,6 @@ public class ClusterDomainsK3sContainerCustomizer implements K3sContainerCustomi
         }
     }
 
-    @SneakyThrows(JsonProcessingException.class)
     private String createCorednsConfig(String containerHost) {
         var configData = switch (resolution) {
             case HOST_BRIDGE_IP -> domains.stream().collect(Collectors.toMap(domain -> domain+".server", this::createDomainConfig));

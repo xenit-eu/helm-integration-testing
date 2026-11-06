@@ -6,10 +6,6 @@ import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizer;
 import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizers;
 import com.contentgrid.testcontainers.k3s.customizer.WaitStrategyCustomizer;
 import com.contentgrid.testcontainers.k3s.customizer.cilium.CiliumK3sContainerCustomizer;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator.Feature;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Ports.Binding;
 import java.util.ArrayList;
@@ -22,11 +18,12 @@ import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import lombok.With;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.k3s.K3sContainer;
+import tools.jackson.dataformat.yaml.YAMLMapper;
+import tools.jackson.dataformat.yaml.YAMLWriteFeature;
 
 /**
  * Installs <a href="https://traefik.io/">Traefik</a> as an ingress controller,
@@ -35,10 +32,10 @@ import org.testcontainers.k3s.K3sContainer;
 @AllArgsConstructor
 public class TraefikIngressK3sContainerCustomizer implements K3sContainerCustomizer {
 
-    private static final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory()
-            .disable(Feature.WRITE_DOC_START_MARKER)
-            .enable(Feature.INDENT_ARRAYS_WITH_INDICATOR)
-    );
+    private static final YAMLMapper yamlMapper = YAMLMapper.builder()
+            .disable(YAMLWriteFeature.WRITE_DOC_START_MARKER)
+            .enable(YAMLWriteFeature.INDENT_ARRAYS_WITH_INDICATOR)
+            .build();
     private static final String EXPOSE_NODEPORT_KEY = "ports.web.nodePort";
 
     public TraefikIngressK3sContainerCustomizer() {
@@ -159,7 +156,6 @@ public class TraefikIngressK3sContainerCustomizer implements K3sContainerCustomi
         );
     }
 
-    @SneakyThrows(JsonProcessingException.class)
     private String templateHelmChartConfig() {
         // For configuration: see
         // - https://docs.k3s.io/helm#customizing-packaged-components-with-helmchartconfig

@@ -45,16 +45,16 @@ class DistributionRegistryContainerTest {
             var yml = container.registryConfig();
 
             assertThat(yml).isEqualTo("""
-                    version: 0.1
-                    log:
-                      level: info
                     http:
                       addr: :5000
+                    log:
+                      level: info
+                    proxy:
+                      remoteurl: https://registry-1.docker.io
                     storage:
                       filesystem:
                         rootdirectory: /var/lib/registry
-                    proxy:
-                      remoteurl: https://registry-1.docker.io
+                    version: 0.1
                     """);
         }
     }
