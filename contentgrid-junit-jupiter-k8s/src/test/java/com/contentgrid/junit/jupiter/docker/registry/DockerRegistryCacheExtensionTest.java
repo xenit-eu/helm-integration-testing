@@ -1,10 +1,8 @@
 package com.contentgrid.junit.jupiter.docker.registry;
 
-import static com.contentgrid.junit.jupiter.docker.registry.DockerRegistryCacheExtension.CONTENTGRID_REGISTRY_CACHE_DISABLED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 
-import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtensionContext;

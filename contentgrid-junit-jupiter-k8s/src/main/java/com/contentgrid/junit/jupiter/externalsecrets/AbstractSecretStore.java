@@ -4,7 +4,6 @@ import com.contentgrid.junit.jupiter.externalsecrets.model.SecretStoreModel;
 import com.contentgrid.junit.jupiter.externalsecrets.model.SecretStoreModel.SecretData;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.Getter;
