@@ -3,10 +3,6 @@ package com.contentgrid.junit.jupiter.k8s.providers;
 import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizer;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator.Feature;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,10 +13,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.k3s.K3sContainer;
+import tools.jackson.dataformat.yaml.YAMLMapper;
+import tools.jackson.dataformat.yaml.YAMLWriteFeature;
 
 /**
  * Configures registry mirrors
@@ -36,10 +33,10 @@ class RegistryMirrorsK3sContainerCustomizer implements K3sContainerCustomizer {
         this(Map.of());
     }
 
-    private static final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory()
-            .disable(Feature.WRITE_DOC_START_MARKER)
-            .enable(Feature.INDENT_ARRAYS_WITH_INDICATOR)
-    );
+    private static final YAMLMapper yamlMapper = YAMLMapper.builder()
+            .disable(YAMLWriteFeature.WRITE_DOC_START_MARKER)
+            .enable(YAMLWriteFeature.INDENT_ARRAYS_WITH_INDICATOR)
+            .build();
 
     public RegistryMirrorsK3sContainerCustomizer withMirror(String name, String endpoint) {
         var mirrorsCopy = new HashMap<>(mirrors);
@@ -57,7 +54,6 @@ class RegistryMirrorsK3sContainerCustomizer implements K3sContainerCustomizer {
         });
     }
 
-    @SneakyThrows(JsonProcessingException.class)
     Optional<String> createRegistriesYaml() {
         if(mirrors.isEmpty()) {
             return Optional.empty();

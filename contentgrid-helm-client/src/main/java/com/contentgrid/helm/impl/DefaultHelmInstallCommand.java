@@ -4,7 +4,6 @@ import com.contentgrid.helm.HelmInstallCommand;
 import com.contentgrid.helm.HelmInstallCommand.InstallOptionsHandler;
 import com.contentgrid.helm.HelmInstallCommand.InstallResult;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -16,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import tools.jackson.databind.json.JsonMapper;
 
 @RequiredArgsConstructor
 class DefaultHelmInstallCommand implements HelmInstallCommand {
@@ -26,7 +26,7 @@ class DefaultHelmInstallCommand implements HelmInstallCommand {
     private final CommandExecutor executor;
 
     @NonNull
-    private final ObjectMapper objectMapper;
+    private final JsonMapper jsonMapper;
 
     @Override
     public InstallResult chart(String name, String chart, InstallOption... options) {
@@ -46,7 +46,7 @@ class DefaultHelmInstallCommand implements HelmInstallCommand {
         // chart reference is required
         args.add(chart);
 
-        var handler = new DefaultInstallOptionsHandler(args, this.objectMapper, !name.isEmpty());
+        var handler = new DefaultInstallOptionsHandler(args, this.jsonMapper, !name.isEmpty());
         for (InstallOption option : options) {
             option.apply(handler);
         }
@@ -60,7 +60,7 @@ class DefaultHelmInstallCommand implements HelmInstallCommand {
         // that say the image was pulled, and what it's digest was.
         // Drop them here, as we only want to parse the installation result JSON
         var jsonStart = stdout.indexOf('{');
-        return this.objectMapper.readValue(stdout.substring(jsonStart), DefaultInstallResult.class);
+        return this.jsonMapper.readValue(stdout.substring(jsonStart), DefaultInstallResult.class);
     }
 
 }
@@ -78,7 +78,7 @@ class DefaultInstallOptionsHandler implements InstallOptionsHandler {
     protected final List<String> arguments;
 
     @NonNull
-    protected final ObjectMapper objectMapper;
+    protected final JsonMapper jsonMapper;
 
     private boolean hasName;
 
@@ -115,7 +115,7 @@ class DefaultInstallOptionsHandler implements InstallOptionsHandler {
     public void values(Map<String, Object> values) {
         for (Entry<String, Object> entry : values.entrySet()) {
             arguments.add("--set-json");
-            arguments.add(entry.getKey() + "=" + objectMapper.writeValueAsString(entry.getValue()));
+            arguments.add(entry.getKey() + "=" + jsonMapper.writeValueAsString(entry.getValue()));
         }
     }
 
