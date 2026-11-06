@@ -1,5 +1,6 @@
 package com.contentgrid.testcontainers.k3s;
 
+import com.contentgrid.testcontainers.k3s.customizer.ImagePullRateLimitK3sContainerCustomizer;
 import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizersImpl;
 import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizer;
 import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizers;
@@ -17,6 +18,7 @@ public class CustomizableK3sContainer extends K3sContainer implements K3sContain
 
     public CustomizableK3sContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
+        customizers.configure(ImagePullRateLimitK3sContainerCustomizer.class);
     }
 
     @Override

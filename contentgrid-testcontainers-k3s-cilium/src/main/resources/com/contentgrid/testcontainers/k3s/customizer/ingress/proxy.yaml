@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: proxy
+  namespace: kube-system
+  labels:
+    helm-integration-testing.contentgrid.com/app: proxy
+data:
+  # Added to the default configuration of the image, which already allows clients from private networks
+  proxy.conf: |
+    # Always forward requests, so changes in the cluster are immediately visible
+    cache deny all
+    # Requests that are blocked by a network policy are silently dropped, fail fast instead of after 1 minute
+    connect_timeout 5 seconds
+    # Do not wait for open connections to complete on shutdown
+    shutdown_lifetime 0 seconds
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proxy
+  namespace: kube-system
+  labels:
+    helm-integration-testing.contentgrid.com/app: proxy
+spec:
+  selector:
+    matchLabels:
+      helm-integration-testing.contentgrid.com/app: proxy
+  template:
+    metadata:
+      labels:
+        helm-integration-testing.contentgrid.com/app: proxy
+    spec:
+      # The entrypoint of the image is a shell script that does not forward SIGTERM to squid,
+      # so the pod is only killed after the termination grace period.
+      terminationGracePeriodSeconds: 1
+      containers:
+        - name: squid
+          image: ubuntu/squid:6.6-24.04_edge@sha256:8a3baed477e2c282ab8aa5edad442f69873246964f225c5c2ae8364b6610963c
+          ports:
+            - containerPort: 3128
+              name: http
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 2
+          volumeMounts:
+            - name: config
+              mountPath: /etc/squid/conf.d/proxy.conf
+              subPath: proxy.conf
+      volumes:
+        - name: config
+          configMap:
+            name: proxy
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: proxy
+  namespace: kube-system
+  labels:
+    helm-integration-testing.contentgrid.com/app: proxy
+spec:
+  selector:
+    helm-integration-testing.contentgrid.com/app: proxy
+  type: NodePort
+  ports:
+    - nodePort: 30100
+      targetPort: http
+      port: 3128
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: proxy
+  namespace: kube-system
+  labels:
+    helm-integration-testing.contentgrid.com/app: proxy
+spec:
+  podSelector:
+    matchLabels:
+      helm-integration-testing.contentgrid.com/app: proxy
+  egress:
+    - to:
+        # Anything inside the cluster: cilium does not match cluster-internal
+        # endpoints on ipBlock CIDRs, so they need their own selectors
+        - namespaceSelector: {}
+  ingress:
+    - {} # Allow anything to connect to the proxy

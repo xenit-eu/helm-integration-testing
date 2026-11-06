@@ -26,7 +26,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 class ProxyK3sContainerCustomizerTest extends AbstractK3sContainerCustomizerTest {
     @Test
-    void proxyToInternalService() throws IOException, InterruptedException {
+    void proxyToInternalService() {
         var container = createContainerOnly(customizers -> {
             customizers.configure(ProxyK3sContainerCustomizer.class);
         });
@@ -44,13 +44,18 @@ class ProxyK3sContainerCustomizerTest extends AbstractK3sContainerCustomizerTest
                 .proxy(ProxySelector.of(ProxyK3sContainerCustomizer.getProxyAddress(container)))
                 .build();
 
-        var response = httpClient.send(HttpRequest.newBuilder()
-                .GET()
-                .uri(URI.create("http://test-ingress.default.svc.cluster.local"))
-                .build(), respInfo -> BodySubscribers.ofString(StandardCharsets.UTF_8));
+        // retry a couple of times, because the service may refuse connections right after the pod becomes ready
+        Awaitility.await()
+                .atMost(10, TimeUnit.SECONDS)
+                .untilAsserted(() -> {
+                    var response = httpClient.send(HttpRequest.newBuilder()
+                            .GET()
+                            .uri(URI.create("http://test-ingress.default.svc.cluster.local"))
+                            .build(), respInfo -> BodySubscribers.ofString(StandardCharsets.UTF_8));
 
-        assertThat(response.statusCode()).isEqualTo(200);
-        assertThat(response.body()).contains("Welcome to nginx!");
+                    assertThat(response.statusCode()).isEqualTo(200);
+                    assertThat(response.body()).contains("Welcome to nginx!");
+                });
     }
 
     @ParameterizedTest
@@ -58,7 +63,7 @@ class ProxyK3sContainerCustomizerTest extends AbstractK3sContainerCustomizerTest
     @ValueSource(classes = {
             CiliumK3sContainerCustomizer.class
     })
-    void proxyToClusterDomain(Class<? extends K3sContainerCustomizer> additionalCustomizer) throws IOException, InterruptedException {
+    void proxyToClusterDomain(Class<? extends K3sContainerCustomizer> additionalCustomizer) {
         var container = createContainerOnly(customizers -> {
             customizers.configure(ProxyK3sContainerCustomizer.class);
             customizers.configure(TraefikIngressK3sContainerCustomizer.class);
@@ -78,16 +83,21 @@ class ProxyK3sContainerCustomizerTest extends AbstractK3sContainerCustomizerTest
                 .close();
 
         // Without a default-deny network policy, the internal service can be accessed directly
-        var response = HttpClient.newBuilder()
-                .proxy(ProxySelector.of(ProxyK3sContainerCustomizer.getProxyAddress(container)))
-                .build()
-                .send(HttpRequest.newBuilder()
-                .GET()
-                .uri(URI.create("http://test-ingress.default.svc.cluster.local"))
-                .build(), respInfo -> BodySubscribers.ofString(StandardCharsets.UTF_8));
+        // retry a couple of times, because the service may refuse connections right after the pod becomes ready
+        Awaitility.await()
+                .atMost(10, TimeUnit.SECONDS)
+                .untilAsserted(() -> {
+                    var response = HttpClient.newBuilder()
+                            .proxy(ProxySelector.of(ProxyK3sContainerCustomizer.getProxyAddress(container)))
+                            .build()
+                            .send(HttpRequest.newBuilder()
+                            .GET()
+                            .uri(URI.create("http://test-ingress.default.svc.cluster.local"))
+                            .build(), respInfo -> BodySubscribers.ofString(StandardCharsets.UTF_8));
 
-        assertThat(response.statusCode()).isEqualTo(200);
-        assertThat(response.body()).contains("Welcome to nginx!");
+                    assertThat(response.statusCode()).isEqualTo(200);
+                    assertThat(response.body()).contains("Welcome to nginx!");
+                });
 
         // retry a couple of times, because traefik takes some time to get the ingress set up
         Awaitility.await()
@@ -152,7 +162,7 @@ class ProxyK3sContainerCustomizerTest extends AbstractK3sContainerCustomizerTest
 
         // We are not able to access this internal service directly
         // because of the ingress policy on the test-ingress service only allowing the ingress controller (and not the proxy)
-        assertThat(response.statusCode()).isEqualTo(500);
+        assertThat(response.statusCode()).isEqualTo(503);
 
         // retry a couple of times, because traefik takes some time to get the ingress set up
         Awaitility.await()

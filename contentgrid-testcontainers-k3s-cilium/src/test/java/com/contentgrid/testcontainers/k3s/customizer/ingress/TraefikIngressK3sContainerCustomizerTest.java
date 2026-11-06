@@ -13,7 +13,6 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.net.http.HttpClient;
-import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse.BodySubscriber;
 import java.net.http.HttpResponse.BodySubscribers;
@@ -75,7 +74,7 @@ class TraefikIngressK3sContainerCustomizerTest extends AbstractK3sContainerCusto
     }
 
     @Test
-    void withUpstreamUpgrade() {
+    void upgradeHeaderNotForwardedUpstream() {
         var container = createContainerOnly(customizers -> {
             customizers.configure(TraefikIngressK3sContainerCustomizer.class);
         });
@@ -92,6 +91,7 @@ class TraefikIngressK3sContainerCustomizerTest extends AbstractK3sContainerCusto
                 .forEach(podResource -> {
                     podResource.watchLog(System.err);
                 });
+
         // whoami doesn't have a proper readiness probe, so we need to retry a couple of times in case the service is not ready yet
         Awaitility.await()
                 .atMost(30, TimeUnit.SECONDS)
@@ -100,6 +100,8 @@ class TraefikIngressK3sContainerCustomizerTest extends AbstractK3sContainerCusto
                             .inNamespace("default")
                             .withName("whoami")
                             .get());
+
+                    // By default, the java HttpClient attempts an upgrade to h2c (Upgrade + HTTP2-Settings headers)
                     var httpClient = HttpClient.newBuilder()
                             .build();
                     var response = httpClient.send(HttpRequest.newBuilder()
@@ -111,58 +113,10 @@ class TraefikIngressK3sContainerCustomizerTest extends AbstractK3sContainerCusto
                     assertThat(response.statusCode())
                             .withFailMessage("Request failed %d: %s", response.statusCode(), response.body())
                             .isEqualTo(200);
-                    // We have succesfully upgrade our frontend protocol to http2
-                    assertThat(response.version()).isEqualTo(Version.HTTP_2);
                     assertThat(response.body()).isInstanceOfSatisfying(WhoamiResponse.class, body -> {
-                        // And the backend receives an Upgrade header as well
-                        assertThat(body.getHeaders()).containsKey("Upgrade");
-                    });
-                });
-    }
-
-    @Test
-    void withoutUpstreamUpgrade() {
-        var container = createContainerOnly(customizers -> {
-            customizers.configure(TraefikIngressK3sContainerCustomizer.class, traefik -> traefik.withoutUpstreamUpgradeHeader());
-        });
-
-        var client = createClientFromContainer(container);
-
-        deployYaml(client, "whoami.yaml");
-
-
-        client.pods()
-                .inNamespace("kube-system")
-                .withLabel("app.kubernetes.io/name", "traefik")
-                .resources()
-                .forEach(podResource -> {
-                    podResource.watchLog(System.err);
-                });
-
-        // whoami doesn't have a proper readiness probe, so we need to retry a couple of times in case the service is not ready yet
-        Awaitility.await()
-                .atMost(30, TimeUnit.SECONDS)
-                .untilAsserted(() -> {
-                    log.info("Ingress {}", client.network().v1().ingresses()
-                            .inNamespace("default")
-                            .withName("whoami")
-                            .get());
-
-                    var httpClient = HttpClient.newBuilder()
-                            .build();
-                    var response = httpClient.send(HttpRequest.newBuilder()
-                            .GET()
-                            .uri(URI.create("http://localhost/api"))
-                            .header("Host", "whoami.test")
-                            .build(), this::whoamiResponse);
-
-                    assertThat(response.statusCode())
-                            .withFailMessage("Request failed %d: %s", response.statusCode(), response.body())
-                            .isEqualTo(200);
-                    // We have succesfully upgrade our frontend protocol to http2
-                    assertThat(response.version()).isEqualTo(Version.HTTP_2);
-                    assertThat(response.body()).isInstanceOfSatisfying(WhoamiResponse.class, body -> {
-                        // But the backend does not receive a lone upgrade header
+                        // Traefik < 3.4 performed the h2c upgrade itself, but forwarded the Upgrade header without the HTTP2-Settings header.
+                        // h2c-aware backends (e.g. Jetty) reject such an invalid upgrade request with a 400 Bad Request.
+                        // Newer Traefik versions do not upgrade to h2c, and do not forward the Upgrade header anymore.
                         assertThat(body.getHeaders()).doesNotContainKey("Upgrade");
                     });
                 });

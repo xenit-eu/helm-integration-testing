@@ -1,11 +1,10 @@
 package com.contentgrid.junit.jupiter.k8s.providers;
 
+import com.contentgrid.testcontainers.k3s.customizer.ImagePullRateLimitK3sContainerCustomizer;
 import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizer;
 import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizers;
 import com.contentgrid.testcontainers.k3s.customizer.K3sContainerCustomizersImpl;
-import lombok.AccessLevel;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.DockerClientFactory;
@@ -16,7 +15,6 @@ import org.testcontainers.utility.DockerImageName;
  * Provides a kubernetes cluster by using a K3S docker container, optionally customized with {@link K3sContainerCustomizer}s
  */
 @Slf4j
-@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class K3sTestcontainersClusterProvider implements KubernetesClusterProvider,
         K3sContainerCustomizers {
 
@@ -31,6 +29,11 @@ public class K3sTestcontainersClusterProvider implements KubernetesClusterProvid
 
     public K3sTestcontainersClusterProvider() {
         this(new K3sContainer(IMAGE_RANCHER_K3S));
+    }
+
+    protected K3sTestcontainersClusterProvider(@NonNull K3sContainer container) {
+        this.container = container;
+        this.customizers.configure(ImagePullRateLimitK3sContainerCustomizer.class);
     }
 
     @Override

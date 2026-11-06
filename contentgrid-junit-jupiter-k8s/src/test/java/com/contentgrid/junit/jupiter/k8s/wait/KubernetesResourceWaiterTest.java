@@ -13,6 +13,7 @@ import com.contentgrid.junit.jupiter.helm.HelmChart;
 import com.contentgrid.junit.jupiter.helm.HelmChartHandle;
 import com.contentgrid.junit.jupiter.helm.HelmClient;
 import com.contentgrid.junit.jupiter.k8s.KubernetesTestCluster;
+import com.contentgrid.junit.jupiter.k8s.resource.ResourceMatcher;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.apps.DaemonSet;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
