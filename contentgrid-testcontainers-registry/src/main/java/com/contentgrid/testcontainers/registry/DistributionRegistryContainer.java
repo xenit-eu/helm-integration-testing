@@ -1,19 +1,18 @@
 package com.contentgrid.testcontainers.registry;
 
 import com.contentgrid.testcontainers.registry.DistributionRegistryContainer.DistributionConfiguration.ProxyConfiguration;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator.Feature;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
+import tools.jackson.dataformat.yaml.YAMLMapper;
+import tools.jackson.dataformat.yaml.YAMLWriteFeature;
 
 @Slf4j
 public class DistributionRegistryContainer extends GenericContainer<DistributionRegistryContainer>  {
@@ -22,11 +21,11 @@ public class DistributionRegistryContainer extends GenericContainer<Distribution
 
     private final DistributionConfiguration configuration = new DistributionConfiguration();
 
-    private final ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory()
-            .disable(Feature.WRITE_DOC_START_MARKER)
-            .enable(Feature.INDENT_ARRAYS_WITH_INDICATOR)
-            .enable(Feature.MINIMIZE_QUOTES)
-    ).setSerializationInclusion(Include.NON_NULL);
+    private final YAMLMapper yamlMapper = YAMLMapper.builder()
+            .disable(YAMLWriteFeature.WRITE_DOC_START_MARKER)
+            .enable(YAMLWriteFeature.INDENT_ARRAYS_WITH_INDICATOR)
+            .enable(YAMLWriteFeature.MINIMIZE_QUOTES)
+            .build();
 
     public static int HTTP_PORT = 5000;
 
@@ -55,7 +54,6 @@ public class DistributionRegistryContainer extends GenericContainer<Distribution
         withCopyToContainer(Transferable.of(registryConfig()), "/etc/docker/registry/config.yml");
     }
 
-    @SneakyThrows
     String registryConfig() {
         return this.yamlMapper.writeValueAsString(this.configuration);
     }
@@ -66,6 +64,7 @@ public class DistributionRegistryContainer extends GenericContainer<Distribution
 
 
     @Data
+    @JsonInclude(Include.NON_NULL)
     static class DistributionConfiguration {
 
         String version = "0.1";
@@ -76,6 +75,7 @@ public class DistributionRegistryContainer extends GenericContainer<Distribution
 
         @Data
         @AllArgsConstructor
+        @JsonInclude(Include.NON_NULL)
         static class ProxyConfiguration {
 
             @NonNull

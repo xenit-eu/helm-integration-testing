@@ -1,7 +1,6 @@
 package com.contentgrid.junit.jupiter.k8s.resource;
 
 import com.contentgrid.helm.HelmInstallCommand.InstallResult;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.api.model.Pod;
@@ -28,6 +27,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.codec.binary.Base64InputStream;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * A set of kubernetes resources, based on {@link ResourceMatcher}.
@@ -97,9 +97,9 @@ class ConfigurableResourceSetImpl implements ConfigurableResourceSet {
                 new ByteArrayInputStream(Base64.getDecoder().decode(releaseRawData))
         ));
 
-        var releaseJson = new ObjectMapper().readTree(releaseJsonData);
+        var releaseJson = JsonMapper.builder().build().readTree(releaseJsonData);
 
-        String yamlManifest = releaseJson.path("manifest").asText();
+        String yamlManifest = releaseJson.path("manifest").asString();
 
         List<HasMetadata> resources = client.getKubernetesSerialization().unmarshal(yamlManifest);
 
