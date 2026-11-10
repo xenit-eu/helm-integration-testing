@@ -4,14 +4,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.nodes.Tag;
+import tools.jackson.dataformat.yaml.YAMLMapper;
+import tools.jackson.dataformat.yaml.YAMLWriteFeature;
 
 /**
  * Model for secret store
  */
 public class SecretStoreModel {
+
+    private static final YAMLMapper yamlMapper = YAMLMapper.builder()
+            .disable(YAMLWriteFeature.WRITE_DOC_START_MARKER)
+            .enable(YAMLWriteFeature.INDENT_ARRAYS_WITH_INDICATOR)
+            .build();
 
     private static final String API_VERSION = "external-secrets.io/v1";
     private final String kind;
@@ -66,10 +70,7 @@ public class SecretStoreModel {
         provider.put("fake", fake);
         yamlMap.put("spec", Map.of("provider", provider));
 
-        DumperOptions options = new DumperOptions();
-        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-        Yaml yaml = new Yaml(options);
-        return yaml.dumpAs(yamlMap, Tag.MAP, DumperOptions.FlowStyle.BLOCK);
+        return yamlMapper.writeValueAsString(yamlMap);
     }
 
     /**
