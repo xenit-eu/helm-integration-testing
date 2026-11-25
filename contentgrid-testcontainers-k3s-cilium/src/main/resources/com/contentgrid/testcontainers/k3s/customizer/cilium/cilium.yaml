@@ -12,6 +12,12 @@ spec:
   valuesContent: |-
     operator:
       replicas: 1
+    ipam:
+      operator:
+        # The chart default (10.0.0.0/8) overlaps with the DNS resolver of the host on some networks
+        # (e.g. 10.0.0.2 on AWS-hosted GitHub runners), which breaks DNS resolution on the node once Cilium is running.
+        # Use the k3s default cluster CIDR instead: https://docs.k3s.io/cli/server#networking
+        clusterPoolIPv4PodCIDRList: ["10.42.0.0/16"]
 ---
 # coredns cilium-network-policy
 apiVersion: cilium.io/v2
